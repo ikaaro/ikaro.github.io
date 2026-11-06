@@ -1,0 +1,521 @@
+{%- comment -%}
+  Mekka · Precio, comparación contra mensualidad y Arma tu paquete.
+  The package price shows once two or more items are on (or the software alone).
+{%- endcomment -%}
+{%- liquid
+  assign tiers_raw = section.settings.tiers | strip | remove: ' ' | split: ','
+  assign solo_price = 0
+  assign solo_variant = ''
+  for b in section.blocks
+    if b.settings.solo and solo_price == 0
+      if b.settings.product != blank
+        assign solo_price = b.settings.product.selected_or_first_available_variant.price
+        assign solo_variant = b.settings.product.selected_or_first_available_variant.id
+      else
+        assign solo_price = b.settings.price | times: 100
+        assign solo_variant = b.settings.variant_id
+      endif
+    endif
+  endfor
+  assign lz_p = all_products['software-mekka-lanzamiento']
+  assign lz_v = lz_p.selected_or_first_available_variant
+  assign lz_left = lz_v.inventory_quantity | default: 0
+  assign lz_now = 'now' | date: '%s' | plus: 0
+  assign lz_end = '2026-12-20T23:59:59-06:00' | date: '%s' | plus: 0
+  assign lz_on = false
+  if lz_p != blank and lz_left > 0 and lz_now < lz_end
+    assign lz_on = true
+    assign solo_regular = solo_price
+    assign solo_price = lz_v.price
+    assign solo_variant = lz_v.id
+  endif
+  assign wa_num = section.settings.agent_whatsapp | remove: ' ' | remove: '+' | remove: '-'
+-%}
+<style>
+  #mk-{{ section.id }} [hidden]{display:none !important}
+
+  /* the offer */
+  #mk-{{ section.id }} .mk-offer{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;padding:clamp(28px,4.4vw,64px);border-radius:var(--mk-r-xl);overflow:hidden;position:relative}
+  #mk-{{ section.id }} .mk-offer::before{content:'';position:absolute;right:-12%;top:-40%;width:60%;aspect-ratio:1;border-radius:50%;background:radial-gradient(closest-side,rgba(154,165,138,.28),transparent);pointer-events:none}
+  #mk-{{ section.id }} .mk-offer__main{grid-column:1 / span 7;display:flex;flex-direction:column;gap:24px;position:relative}
+  #mk-{{ section.id }} .mk-offer h2{font-family:var(--mk-f-title);font-size:clamp(40px,5.4vw,84px);line-height:1;font-weight:500;letter-spacing:-.03em;color:#fff}
+  #mk-{{ section.id }} .mk-offer h2 > span{display:block}
+  #mk-{{ section.id }} .mk-price-tag{display:inline-block;padding:0 .22em;border-radius:.3em;background:var(--mk-sage);color:#000;font-variant-numeric:tabular-nums}
+  #mk-{{ section.id }} .mk-offer__acts{display:flex;flex-wrap:wrap;gap:12px}
+  #mk-{{ section.id }} .mk-incl{grid-column:9 / span 4;align-self:center;display:flex;flex-direction:column;gap:8px;position:relative}
+  #mk-{{ section.id }} .mk-incl li{display:flex;align-items:center;gap:12px;min-height:52px;padding:0 16px;border-radius:var(--mk-r-md);background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--mk-line);font-size:15px;font-weight:600;color:#fff}
+  #mk-{{ section.id }} .mk-incl li svg.mk-i{color:var(--mk-sage)}
+  #mk-{{ section.id }} .mk-mp{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--mk-mp)}
+  #mk-{{ section.id }} .mk-mp svg.mk-i{width:15px;height:15px}
+
+  /* one payment vs paying every month */
+  #mk-{{ section.id }} .mk-vs{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;align-items:start}
+  #mk-{{ section.id }} .mk-vs__text{grid-column:1 / span 5;display:flex;flex-direction:column;gap:18px}
+  #mk-{{ section.id }} .mk-calc{grid-column:7 / span 6;padding:28px;border-radius:var(--mk-r-xl);display:flex;flex-direction:column;gap:22px}
+  #mk-{{ section.id }} .mk-calc__q{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  #mk-{{ section.id }} .mk-calc__q label{font-size:16px;font-weight:600;color:#fff}
+  #mk-{{ section.id }} .mk-calc__q output{font-family:var(--mk-f-title);font-size:30px;font-weight:500;color:#fff}
+  #mk-{{ section.id }} .mk-range{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;cursor:pointer;margin:0}
+  #mk-{{ section.id }} .mk-range::-webkit-slider-runnable-track{height:8px;border-radius:999px;background:linear-gradient(90deg,var(--mk-sage) var(--p,30%),rgba(255,255,255,.1) var(--p,30%))}
+  #mk-{{ section.id }} .mk-range::-moz-range-track{height:8px;border-radius:999px;background:rgba(255,255,255,.1)}
+  #mk-{{ section.id }} .mk-range::-moz-range-progress{height:8px;border-radius:999px;background:var(--mk-sage)}
+  #mk-{{ section.id }} .mk-range::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-9px;border-radius:50%;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.5);transition:transform 160ms var(--mk-ease)}
+  #mk-{{ section.id }} .mk-range::-moz-range-thumb{width:26px;height:26px;border:0;border-radius:50%;background:#fff}
+  #mk-{{ section.id }} .mk-range:active::-webkit-slider-thumb{transform:scale(1.12)}
+  #mk-{{ section.id }} .mk-seg-ctl{display:inline-flex;align-self:flex-start;padding:4px;border-radius:999px;background:rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px var(--mk-line)}
+  #mk-{{ section.id }} .mk-seg-ctl button{min-height:36px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--mk-muted);font-size:14px;font-weight:600;cursor:pointer;transition:background-color 200ms ease,color 200ms ease}
+  #mk-{{ section.id }} .mk-seg-ctl button[aria-pressed="true"]{background:var(--mk-sage);color:#000}
+  #mk-{{ section.id }} .mk-bars2{display:flex;flex-direction:column;gap:12px}
+  #mk-{{ section.id }} .mk-bar2{display:flex;flex-direction:column;gap:8px}
+  #mk-{{ section.id }} .mk-bar2 > div{display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--mk-muted)}
+  #mk-{{ section.id }} .mk-bar2 > div b{color:#fff;font-weight:700}
+  #mk-{{ section.id }} .mk-bar2 i{display:block;height:14px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+  #mk-{{ section.id }} .mk-bar2 i span{display:block;height:100%;border-radius:999px;transform-origin:left;transition:transform 450ms var(--mk-ease)}
+  #mk-{{ section.id }} .mk-bar2--them i span{background:var(--mk-terra)}
+  #mk-{{ section.id }} .mk-bar2--us i span{background:var(--mk-sage)}
+  #mk-{{ section.id }} .mk-save{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;border-radius:var(--mk-r-md);background:var(--mk-sage-dim);box-shadow:inset 0 0 0 1px rgba(154,165,138,.45)}
+  #mk-{{ section.id }} .mk-save span{font-size:15px;color:var(--mk-text)}
+  #mk-{{ section.id }} .mk-save strong{font-family:var(--mk-f-title);font-size:clamp(24px,2.4vw,32px);font-weight:500;color:var(--mk-sage)}
+  #mk-{{ section.id }} .mk-calc__note{font-size:14px;color:var(--mk-soft)}
+
+  /* the builder */
+  #mk-{{ section.id }} .mk-build__grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;align-items:start}
+  #mk-{{ section.id }} .mk-items{grid-column:1 / span 7;border:0;margin:0;padding:12px;border-radius:var(--mk-r-xl);min-width:0;display:flex;flex-direction:column;gap:8px}
+  #mk-{{ section.id }} .mk-item{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:16px;padding:16px;border-radius:var(--mk-r-md);background:var(--mk-surface);box-shadow:inset 0 0 0 1px var(--mk-raised);cursor:pointer;transition:background-color 200ms ease,box-shadow 200ms ease}
+  @media (hover:hover) and (pointer:fine){#mk-{{ section.id }} .mk-item:hover{background:rgba(255,255,255,.07)}}
+  #mk-{{ section.id }} .mk-item.is-on{background:rgba(154,165,138,.10);box-shadow:inset 0 0 0 1px rgba(154,165,138,.55)}
+  #mk-{{ section.id }} .mk-item__ic{width:48px;height:42px;display:flex;align-items:center;justify-content:center;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:rgba(255,255,255,.10);color:#e5e5e0;transition:background-color 200ms ease,color 200ms ease}
+  #mk-{{ section.id }} .mk-item.is-on .mk-item__ic{background:var(--mk-sage);color:#000}
+  #mk-{{ section.id }} .mk-item h3{font-family:var(--mk-f-title);font-size:18px;line-height:1.25;font-weight:500;color:#fff}
+  #mk-{{ section.id }} .mk-item p{margin-top:4px;font-size:14px;line-height:1.5;color:var(--mk-muted)}
+  #mk-{{ section.id }} .mk-item p b{color:var(--mk-text);font-weight:600}
+  #mk-{{ section.id }} .mk-item__badge{display:inline-flex;margin-top:8px;align-items:center;min-height:24px;padding:0 10px;border-radius:999px;font-family:var(--mk-f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.08);color:#d9d9d4}
+  #mk-{{ section.id }} .mk-item__badge.is-soon{background:rgba(217,198,163,.16);color:var(--mk-champ)}
+  #mk-{{ section.id }} .mk-item.is-soon{cursor:default}
+  #mk-{{ section.id }} .mk-item.is-soon .mk-item__ic{opacity:.6}
+
+  #mk-{{ section.id }} .mk-sw{position:relative;width:52px;height:30px;flex:0 0 auto}
+  #mk-{{ section.id }} .mk-sw input{position:absolute;inset:-8px;width:calc(100% + 16px);height:calc(100% + 16px);margin:0;opacity:0;cursor:pointer;z-index:1}
+  #mk-{{ section.id }} .mk-sw i{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px var(--mk-line-2);transition:background-color 200ms ease}
+  #mk-{{ section.id }} .mk-sw i::after{content:'';position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:#bdbdbd;transition:transform 240ms var(--mk-ease),background-color 200ms ease}
+  #mk-{{ section.id }} .mk-sw input:checked + i{background:var(--mk-sage);box-shadow:none}
+  #mk-{{ section.id }} .mk-sw input:checked + i::after{transform:translateX(22px);background:#000}
+  #mk-{{ section.id }} .mk-sw input:focus-visible + i{outline:2px solid #fff;outline-offset:3px}
+  #mk-{{ section.id }} .mk-sw input:disabled{cursor:not-allowed}
+  #mk-{{ section.id }} .mk-sw input:disabled + i{opacity:.35}
+  #mk-{{ section.id }} .mk-sw:active i::after{width:26px}
+
+  /* summary, styled like the software's "Registrar venta" */
+  #mk-{{ section.id }} .mk-sum{grid-column:8 / span 5;position:sticky;top:24px;padding:26px;border-radius:var(--mk-r-xl);display:flex;flex-direction:column;gap:16px}
+  #mk-{{ section.id }} .mk-sum__head{display:flex;justify-content:space-between;align-items:baseline}
+  #mk-{{ section.id }} .mk-sum__head h3{font-family:var(--mk-f-title);font-size:20px;font-weight:500;color:#fff}
+  #mk-{{ section.id }} .mk-sum__head span{font-family:var(--mk-f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mk-soft)}
+  #mk-{{ section.id }} .mk-bubble{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:rgba(0,0,0,.35);border:1px solid var(--mk-line)}
+  #mk-{{ section.id }} .mk-bubble span:first-child{width:44px}
+  #mk-{{ section.id }} .mk-bubble b{display:block;font-family:var(--mk-f-title);font-size:16px;font-weight:500;color:#fff}
+  #mk-{{ section.id }} .mk-bubble small{display:block;font-size:13px;color:var(--mk-muted);line-height:1.4}
+  #mk-{{ section.id }} .mk-sum__empty{padding:18px;border-radius:var(--mk-r-md);background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px var(--mk-line);font-size:15px;color:var(--mk-muted);text-align:center}
+  #mk-{{ section.id }} .mk-sum ul{display:flex;flex-direction:column;gap:6px}
+  #mk-{{ section.id }} .mk-sum li{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:var(--mk-r-sm);background:var(--mk-surface);border:1px solid var(--mk-raised);font-size:14px;color:var(--mk-text)}
+  #mk-{{ section.id }} .mk-sum li span:last-child{flex:0 0 auto;font-family:var(--mk-f-mono);font-weight:500;color:#fff;font-variant-numeric:tabular-nums}
+  @media (prefers-reduced-motion:no-preference){#mk-{{ section.id }} .mk-sum li.is-new{animation:mkRow 260ms var(--mk-ease)}}
+  @keyframes mkRow{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  #mk-{{ section.id }} .mk-sum__lines{display:flex;flex-direction:column;gap:6px;font-size:15px;color:var(--mk-muted)}
+  #mk-{{ section.id }} .mk-sum__lines div{display:flex;justify-content:space-between}
+  #mk-{{ section.id }} .mk-sum__lines s{color:var(--mk-soft)}
+  #mk-{{ section.id }} .mk-sum__total{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  #mk-{{ section.id }} .mk-sum__total span{font-size:15px;color:var(--mk-muted)}
+  #mk-{{ section.id }} .mk-sum__total strong{font-family:var(--mk-f-title);font-size:clamp(36px,3.2vw,46px);font-weight:500;letter-spacing:-.02em;color:#fff;font-variant-numeric:tabular-nums}
+  #mk-{{ section.id }} .mk-sum .mk-save{padding:12px 16px}
+  #mk-{{ section.id }} .mk-sum .mk-save strong{font-size:22px}
+  #mk-{{ section.id }} .mk-hint{font-size:14px;color:var(--mk-muted)}
+  #mk-{{ section.id }} .mk-sum .mk-btn{width:100%}
+  #mk-{{ section.id }} .mk-sum .mk-btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+  #mk-{{ section.id }} .mk-note{font-size:14px;line-height:1.5;color:var(--mk-soft)}
+  #mk-{{ section.id }} .mk-error{font-size:14px;color:var(--mk-bad)}
+
+  /* phone: a bar with the running total */
+  #mk-{{ section.id }} .mk-dock{display:none}
+  @media (max-width:980px){
+    #mk-{{ section.id }} .mk-offer h2{font-size:clamp(30px,8.4vw,56px)}
+    #mk-{{ section.id }} .mk-offer__main,#mk-{{ section.id }} .mk-incl,#mk-{{ section.id }} .mk-vs__text,#mk-{{ section.id }} .mk-calc,#mk-{{ section.id }} .mk-items,#mk-{{ section.id }} .mk-sum{grid-column:1 / -1}
+    #mk-{{ section.id }} .mk-sum{position:static}
+    #mk-{{ section.id }} .mk-dock{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px 10px 18px;border-radius:999px;transform:translateY(140%);transition:transform 300ms var(--mk-ease)}
+    #mk-{{ section.id }} .mk-dock.is-on{transform:none}
+    #mk-{{ section.id }} .mk-dock span{font-size:14px;color:var(--mk-muted)}
+    #mk-{{ section.id }} .mk-dock b{display:block;font-family:var(--mk-f-title);font-size:20px;font-weight:500;color:#fff;font-variant-numeric:tabular-nums}
+  }
+  @media (max-width:640px){
+    #mk-{{ section.id }} .mk-item{grid-template-columns:40px minmax(0,1fr) auto;gap:12px;padding:14px}
+    #mk-{{ section.id }} .mk-item__ic{width:40px;height:40px}
+    #mk-{{ section.id }} .mk-calc,#mk-{{ section.id }} .mk-sum{padding:20px}
+  }
+
+  .mk-wa{position:fixed;right:20px;bottom:20px;z-index:60;width:60px;height:60px;border-radius:50%;background:#25D366;color:#FFFFFF;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px rgba(0,0,0,.45);transition:transform 160ms cubic-bezier(.23,1,.32,1)}
+  .mk-wa:active{transform:scale(.95)}
+  .mk-wa:focus-visible{outline:3px solid #FFFFFF;outline-offset:3px}
+  .mk-wa svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  @media (max-width:520px){.mk-wa{right:16px;bottom:16px;width:56px;height:56px}}
+</style>
+
+<div class="mk" id="mk-{{ section.id }}">
+  <section class="mk-sec mk-wrap" id="precio" aria-labelledby="mk-price-h-{{ section.id }}">
+    <div class="mk-offer mk-glass" data-rise>
+      <div class="mk-offer__main">
+        <span class="mk-label">Precio · licencia de por vida</span>
+        <h2 id="mk-price-h-{{ section.id }}">
+          <span>Mekka cuesta</span>
+          <span><span class="mk-price-tag">{{ solo_price | money_without_trailing_zeros }}</span> una vez.</span>
+          {%- if lz_on -%}<span style="display:block;margin-top:10px;font-size:.36em;letter-spacing:0;color:var(--mk-soft)">Antes <s>{{ solo_regular | money_without_trailing_zeros }}</s> · precio de lanzamiento, quedan {{ lz_left }} lugares</span>{%- endif -%}
+        </h2>
+        <p class="mk-lead">Licencia de por vida para tu gimnasio. Nada de cobros cada mes, nada de costo por socio.</p>
+        <div class="mk-offer__acts">
+          <a class="mk-btn" href="{{ routes.root_url | remove_last: '/' }}/cart/{{ solo_variant }}:1">Comprar el software</a>
+          <a class="mk-btn mk-btn--glass" href="#paquete">Agregar equipo</a>
+        </div>
+        <span class="mk-mp"><svg class="mk-i" aria-hidden="true"><use href="#i-lock"/></svg>Compra segura con Mercado Pago</span>
+      </div>
+      <ul class="mk-incl" aria-label="Incluye">
+        <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Licencia de por vida</li>
+        <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Socios ilimitados</li>
+        <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>1 año de garantía</li>
+        <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Soporte por chat de por vida</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="mk-sec mk-wrap" id="comparar" aria-labelledby="mk-vs-h-{{ section.id }}">
+    <div class="mk-vs">
+      <div class="mk-vs__text">
+        <span class="mk-label" data-rise>Pago único contra mensualidad</span>
+        <h2 class="mk-h2" id="mk-vs-h-{{ section.id }}" data-rise>Deja de pagar <em>cada mes.</em></h2>
+        <p class="mk-lead" data-rise style="--d:1">Los sistemas para gimnasio suelen cobrar una mensualidad para siempre. Pon lo que pagas hoy y mira cuánto se va en unos años.</p>
+      </div>
+      <div class="mk-calc mk-glass" data-rise style="--d:2" data-mk-calc data-solo="{{ solo_price }}">
+        <div>
+          <div class="mk-calc__q"><label for="mk-month-{{ section.id }}">¿Cuánto pagas al mes por tu sistema?</label><output class="mk-num" for="mk-month-{{ section.id }}" data-mk-out>$800</output></div>
+          <input class="mk-range" id="mk-month-{{ section.id }}" type="range" min="200" max="3000" step="50" value="800" data-mk-month>
+        </div>
+        <div class="mk-seg-ctl" role="group" aria-label="Plazo">
+          <button type="button" data-mk-years="1" aria-pressed="false">1 año</button>
+          <button type="button" data-mk-years="3" aria-pressed="true">3 años</button>
+          <button type="button" data-mk-years="5" aria-pressed="false">5 años</button>
+        </div>
+        <div class="mk-bars2">
+          <div class="mk-bar2 mk-bar2--them"><div><span>Con mensualidad</span><b class="mk-num" data-mk-them>$28,800</b></div><i><span data-mk-them-bar></span></i></div>
+          <div class="mk-bar2 mk-bar2--us"><div><span>Con Mekka, una vez</span><b class="mk-num" data-mk-us>{{ solo_price | money_without_trailing_zeros }}</b></div><i><span data-mk-us-bar></span></i></div>
+        </div>
+        <div class="mk-save" aria-live="polite"><span data-mk-save-label>Te ahorras en 3 años</span><strong class="mk-num" data-mk-save>$23,400</strong></div>
+        <p class="mk-calc__note" data-mk-payback>Mekka se paga solo en 7 meses. Compara solo el software; el equipo se paga una vez aparte.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mk-sec mk-wrap" id="paquete" aria-labelledby="mk-title-{{ section.id }}">
+    <div class="mk-head">
+      <span class="mk-label" data-rise>Equipo y servicio</span>
+      <h2 class="mk-h2" id="mk-title-{{ section.id }}" data-rise>{{ section.settings.heading }}</h2>
+      {%- if section.settings.subheading != blank -%}<p class="mk-lead" data-rise style="--d:1">{{ section.settings.subheading }}</p>{%- endif -%}
+    </div>
+
+    <div class="mk-build__grid">
+      <fieldset class="mk-items mk-glass" data-rise>
+        <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Elige lo que incluye tu paquete</legend>
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign p = block.settings.product
+            if p != blank
+              assign v = p.selected_or_first_available_variant
+              assign price_cents = v.price
+              assign variant_id = v.id
+              assign item_title = block.settings.title | default: p.title
+            else
+              assign price_cents = block.settings.price | times: 100
+              assign variant_id = block.settings.variant_id
+              assign item_title = block.settings.title
+            endif
+            if block.settings.solo and lz_on
+              assign price_cents = lz_v.price
+              assign variant_id = lz_v.id
+            endif
+            assign input_id = 'mk-' | append: section.id | append: '-' | append: forloop.index
+            assign soon = block.settings.coming_soon
+            case block.settings.icon
+              when 'software'
+                assign ic = 'i-pc'
+              when 'huella'
+                assign ic = 'i-finger'
+              when 'facial'
+                assign ic = 'i-face'
+              when 'torniquete'
+                assign ic = 'i-turn'
+              when 'computadora'
+                assign ic = 'i-pc'
+              when 'instalacion'
+                assign ic = 'i-wrench'
+              when 'cajon'
+                assign ic = 'i-drawer'
+              else
+                assign ic = 'i-box'
+            endcase
+          -%}
+          <label class="mk-item{% if soon %} is-soon{% endif %}" for="{{ input_id }}" {{ block.shopify_attributes }}>
+            <span class="mk-item__ic" aria-hidden="true"><svg class="mk-i"><use href="#{{ ic }}"/></svg></span>
+            <span>
+              <h3>{{ item_title }}</h3>
+              <p>
+                {%- if soon -%}
+                  Llega el <b data-mk-date="{{ block.settings.launch_date | escape }}">21 de noviembre</b><span data-mk-left data-target="{{ block.settings.launch_date | escape }}"></span>. {{ section.settings.upgrade_text }}
+                {%- else -%}
+                  {{ block.settings.description }}
+                {%- endif -%}
+              </p>
+              {%- if soon -%}<span class="mk-item__badge is-soon">Próximamente</span>{%- elsif block.settings.solo and lz_on -%}<span class="mk-item__badge is-soon">Lanzamiento · antes {{ solo_regular | money_without_trailing_zeros }}</span>{%- elsif block.settings.badge != blank -%}<span class="mk-item__badge">{{ block.settings.badge }}</span>{%- endif -%}
+            </span>
+            <span class="mk-sw">
+              <input id="{{ input_id }}" type="checkbox" role="switch"{% if soon %} disabled aria-disabled="true"{% elsif block.settings.default_on %} checked{% endif %} data-mk-item{% if block.settings.solo %} data-solo="true"{% endif %} data-title="{{ item_title | escape }}" data-price="{{ price_cents }}" data-variant="{{ variant_id }}" aria-label="{{ item_title | escape }}">
+              <i aria-hidden="true"></i>
+            </span>
+          </label>
+        {%- endfor -%}
+      </fieldset>
+
+      <aside class="mk-sum mk-glass" id="mk-sum-{{ section.id }}" aria-labelledby="mk-tk-{{ section.id }}" data-rise style="--d:1">
+        <div class="mk-sum__head"><h3 id="mk-tk-{{ section.id }}">Tu paquete</h3><span data-mk-today></span></div>
+        <div class="mk-bubble"><span><svg class="mk-masc" viewBox="0 0 100 76.9" aria-hidden="true"><use href="#m-body"/><path class="e" d="M22.0 46.6 L30.95 37.6 L39.9 46.6"/><path class="e" data-mk-eye d="M60.1 46.6 L69.05 37.6 L78.0 46.6"/></svg></span><span><b data-mk-say>Estoy revisando tu paquete.</b><small data-mk-say2>Activa lo que necesitas y te muestro el precio.</small></span></div>
+        <div aria-live="polite" style="display:flex;flex-direction:column;gap:16px">
+          <p class="mk-sum__empty" data-mk-empty>Activa lo que necesitas. Con dos o más, aquí ves el precio de tu paquete.</p>
+          <ul data-mk-chosen></ul>
+          <div class="mk-sum__lines" data-mk-reveal hidden>
+            <div><span>Valor regular</span><s class="mk-num" data-mk-subtotal></s></div>
+          </div>
+          <div class="mk-save" data-mk-saverow hidden><span data-mk-pct-label></span><strong class="mk-num" data-mk-saving></strong></div>
+          <div class="mk-sum__total" data-mk-totalrow hidden><span>Pagas una vez</span><strong data-mk-total></strong></div>
+          <p class="mk-hint" data-mk-hint hidden></p>
+        </div>
+        <button type="button" class="mk-btn" data-mk-buy disabled>{{ section.settings.button_label }}</button>
+        <a class="mk-btn mk-btn--glass" data-mk-agent href="{{ section.settings.agent_url | default: '#demo' }}"><svg class="mk-i" aria-hidden="true"><use href="#i-wa"/></svg>{{ section.settings.agent_label }}</a>
+        <p class="mk-error" data-mk-error hidden></p>
+        <span class="mk-mp"><svg class="mk-i" aria-hidden="true"><use href="#i-lock"/></svg>Compra segura con Mercado Pago</span>
+        {%- if section.settings.note_1 != blank -%}<p class="mk-note">{{ section.settings.note_1 }}</p>{%- endif -%}
+      </aside>
+    </div>
+
+    <a class="mk-dock mk-glass" href="#mk-sum-{{ section.id }}" data-mk-dock aria-hidden="true" tabindex="-1">
+      <span>Tu paquete<b data-mk-dock-total>—</b></span>
+      <span class="mk-btn mk-btn--sm">Ver paquete</span>
+    </a>
+  </section>
+
+  <script type="application/json" data-mk-config>
+    {
+      "tiers": [{%- for t in tiers_raw -%}{%- assign parts = t | split: ':' -%}{%- if parts.size == 2 -%}[{{ parts[0] | plus: 0 }},{{ parts[1] | plus: 0.0 }}]{%- unless forloop.last -%},{%- endunless -%}{%- endif -%}{%- endfor -%}],
+      "useCodes": {{ section.settings.use_codes | json }},
+      "codePrefix": {{ section.settings.code_prefix | json }},
+      "whatsapp": {{ wa_num | json }},
+      "root": {{ routes.root_url | json }},
+      "currency": {{ cart.currency.iso_code | default: 'MXN' | json }}
+    }
+  </script>
+
+  <script>
+    (function () {
+      var root = document.getElementById('mk-{{ section.id }}');
+      if (!root) return;
+      var cfg = JSON.parse(root.querySelector('[data-mk-config]').textContent);
+      var fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: cfg.currency, maximumFractionDigits: 0 });
+      function money(c) { return fmt.format(c / 100); }
+      var $ = function (s) { return root.querySelector(s); };
+
+      /* one payment vs monthly */
+      var calc = $('[data-mk-calc]');
+      if (calc) {
+        var solo = parseInt(calc.dataset.solo, 10) || 540000;
+        var range = $('[data-mk-month]'), years = 3;
+        var yBtns = calc.querySelectorAll('[data-mk-years]');
+        function draw() {
+          var m = parseInt(range.value, 10) * 100;
+          var them = m * 12 * years;
+          var max = Math.max(them, solo);
+          range.style.setProperty('--p', ((range.value - range.min) / (range.max - range.min) * 100) + '%');
+          $('[data-mk-out]').textContent = money(m);
+          $('[data-mk-them]').textContent = money(them);
+          $('[data-mk-them-bar]').style.transform = 'scaleX(' + (them / max) + ')';
+          $('[data-mk-us-bar]').style.transform = 'scaleX(' + (solo / max) + ')';
+          var save = them - solo;
+          $('[data-mk-save-label]').textContent = save >= 0 ? 'Te ahorras en ' + years + (years === 1 ? ' año' : ' años') : 'En ' + years + ' año, Mekka cuesta más';
+          $('[data-mk-save]').textContent = money(Math.abs(save));
+          var months = Math.ceil(solo / m);
+          $('[data-mk-payback]').textContent = 'Mekka se paga solo en ' + months + (months === 1 ? ' mes' : ' meses') + '. Compara solo el software; el equipo se paga una vez aparte.';
+        }
+        range.addEventListener('input', draw);
+        yBtns.forEach(function (b) {
+          b.addEventListener('click', function () {
+            years = parseInt(b.dataset.mkYears, 10);
+            yBtns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+            draw();
+          });
+        });
+        draw();
+      }
+
+      /* the package */
+      var tiers = (cfg.tiers || []).sort(function (a, b) { return a[0] - b[0]; });
+      var inputs = Array.prototype.slice.call(root.querySelectorAll('[data-mk-item]'));
+      var els = { empty: $('[data-mk-empty]'), chosen: $('[data-mk-chosen]'), reveal: $('[data-mk-reveal]'), subtotal: $('[data-mk-subtotal]'),
+        pctLabel: $('[data-mk-pct-label]'), saving: $('[data-mk-saving]'), saveRow: $('[data-mk-saverow]'), total: $('[data-mk-total]'), totalRow: $('[data-mk-totalrow]'), hint: $('[data-mk-hint]'),
+        buy: $('[data-mk-buy]'), agent: $('[data-mk-agent]'), error: $('[data-mk-error]'), dock: $('[data-mk-dock]'), dockTotal: $('[data-mk-dock-total]') };
+      var buyLabel = els.buy.textContent;
+      var eye = $('[data-mk-eye]'), say = $('[data-mk-say]'), say2 = $('[data-mk-say2]');
+      var shown = {};
+      var today = $('[data-mk-today]');
+      if (today) today.textContent = new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Mexico_City' }).format(new Date());
+
+      function pctFor(n) { var p = 0; tiers.forEach(function (t) { if (n >= t[0]) p = t[1]; }); return p; }
+      function nextTier(n) { for (var i = 0; i < tiers.length; i++) { if (tiers[i][0] > n) return tiers[i]; } return null; }
+      function selected() { return inputs.filter(function (i) { return i.checked; }); }
+      function updateAgent(sel) {
+        if (!cfg.whatsapp) return;
+        var msg = 'Hola, quiero cotizar un paquete Mekka';
+        if (sel.length) msg += ' con: ' + sel.map(function (i) { return i.dataset.title; }).join(', ');
+        els.agent.href = 'https://wa.me/' + cfg.whatsapp + '?text=' + encodeURIComponent(msg + '.');
+        els.agent.target = '_blank'; els.agent.rel = 'noopener';
+      }
+      function row(i, showPrice) {
+        var li = document.createElement('li');
+        var a = document.createElement('span'); a.textContent = i.dataset.title;
+        var b = document.createElement('span'); b.textContent = showPrice ? money(parseInt(i.dataset.price, 10)) : '—';
+        li.appendChild(a); li.appendChild(b);
+        if (!shown[i.id]) li.className = 'is-new';
+        return li;
+      }
+      function update() {
+        var sel = selected(), n = sel.length;
+        var soloOnly = n === 1 && sel[0].dataset.solo === 'true';
+        var priced = n >= 2 || soloOnly;
+        inputs.forEach(function (i) { i.closest('.mk-item').classList.toggle('is-on', i.checked); });
+        els.chosen.innerHTML = '';
+        sel.forEach(function (i) { els.chosen.appendChild(row(i, priced)); });
+        var now = {}; sel.forEach(function (i) { now[i.id] = true; }); shown = now;
+        els.error.hidden = true; updateAgent(sel); els.buy.textContent = buyLabel;
+        var priced2 = n >= 2 || soloOnly;
+        if (eye) eye.setAttribute('d', priced2 ? 'M60.1 42.95 L69.05 42.95 L78.0 42.95' : 'M60.1 46.6 L69.05 37.6 L78.0 46.6');
+        if (say) { say.textContent = priced2 ? 'Listo. Yo me encargo.' : 'Estoy revisando tu paquete.'; say2.textContent = priced2 ? 'Te envío todo y te lo instalamos en CDMX y Edomex.' : (n === 1 ? 'Activa uno más y te muestro el precio.' : 'Activa lo que necesitas y te muestro el precio.'); }
+        els.chosen.hidden = n === 0;
+        if (soloOnly) {
+          var sp = parseInt(sel[0].dataset.price, 10);
+          els.empty.hidden = false; els.empty.textContent = 'Solo el software, o activa algo más para ver el precio de tu paquete.';
+          els.reveal.hidden = true; els.saveRow.hidden = true; els.hint.hidden = true; els.buy.disabled = false;
+          els.totalRow.hidden = false; els.total.textContent = money(sp); els.dockTotal.textContent = money(sp);
+          els.buy.textContent = 'Comprar solo el software';
+          return;
+        }
+        if (n < 2) {
+          els.empty.hidden = false;
+          els.empty.textContent = n === 1 ? 'Activa uno más para ver el precio de tu paquete.' : 'Activa lo que necesitas. Con dos o más, aquí ves el precio de tu paquete.';
+          els.reveal.hidden = true; els.saveRow.hidden = true; els.hint.hidden = true; els.totalRow.hidden = true; els.buy.disabled = true;
+          els.dockTotal.textContent = '—';
+          return;
+        }
+        var sub = sel.reduce(function (s, i) { return s + parseInt(i.dataset.price, 10); }, 0);
+        var pct = pctFor(n), total = Math.round(sub * (1 - pct / 100));
+        els.empty.hidden = true; els.buy.disabled = false;
+        els.reveal.hidden = false; els.saveRow.hidden = false; els.totalRow.hidden = false;
+        els.subtotal.textContent = money(sub);
+        els.pctLabel.textContent = 'Ahorro de paquete (' + pct + '%)';
+        els.saving.textContent = '−' + money(sub - total);
+        els.total.textContent = money(total); els.dockTotal.textContent = money(total);
+        var nx = nextTier(n);
+        els.hint.textContent = nx ? 'Agrega ' + (nx[0] - n) + ' más y tu ahorro sube a ' + nx[1] + '%.' : 'Tienes el ahorro máximo de paquete.';
+        els.hint.hidden = false;
+      }
+      inputs.forEach(function (i) { i.addEventListener('change', update); });
+      els.buy.addEventListener('click', function () {
+        var ids = selected().map(function (i) { return parseInt(i.dataset.variant, 10); }).filter(function (id) { return id; });
+        var solo = ids.length === 1 && selected()[0].dataset.solo === 'true';
+        if (ids.length < 2 && !solo) return;
+        var label = els.buy.textContent;
+        els.buy.disabled = true; els.buy.textContent = 'Llevándote al pago…';
+        var url = cfg.root.replace(/\/$/, '') + '/cart/' + ids.map(function (id) { return id + ':1'; }).join(',');
+        if (!solo && cfg.useCodes && cfg.codePrefix) url += '?discount=' + encodeURIComponent(cfg.codePrefix + ids.length);
+        window.location.href = url;
+        setTimeout(function () { els.buy.disabled = false; els.buy.textContent = label; }, 4000);
+      });
+
+      /* phone dock: visible while the list is on screen and the summary is not */
+      if (els.dock && 'IntersectionObserver' in window) {
+        var listIn = false, sumIn = false;
+        var setDock = function () { els.dock.classList.toggle('is-on', listIn && !sumIn); };
+        new IntersectionObserver(function (e) { listIn = e[0].isIntersecting; setDock(); }).observe($('.mk-items'));
+        new IntersectionObserver(function (e) { sumIn = e[0].isIntersecting; setDock(); }, { threshold: .25 }).observe($('.mk-sum'));
+      }
+
+      root.querySelectorAll('[data-mk-date]').forEach(function (el) {
+        var t = Date.parse(el.dataset.mkDate);
+        if (!isNaN(t)) el.textContent = new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', timeZone: 'America/Mexico_City' }).format(new Date(t));
+      });
+      function tick() {
+        root.querySelectorAll('[data-mk-left]').forEach(function (el) {
+          var t = Date.parse(el.dataset.target); if (isNaN(t)) { el.textContent = ''; return; }
+          var days = Math.ceil(Math.max(0, t - Date.now()) / 864e5);
+          el.textContent = days > 1 ? ', faltan ' + days + ' días' : (days === 1 ? ', falta 1 día' : '');
+        });
+      }
+      tick(); setInterval(tick, 60000);
+      update();
+    })();
+  </script>
+</div>
+
+{%- if wa_num != blank -%}
+  <a class="mk-wa" href="https://wa.me/{{ wa_num }}?text={{ 'Hola, quiero información sobre Mekka Fitness Control.' | url_encode }}" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-wa"/></svg>
+  </a>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Mekka · Arma tu paquete",
+  "tag": "div",
+  "class": "mekka-bundle-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Título", "default": "Arma tu paquete." },
+    { "type": "textarea", "id": "subheading", "label": "Texto", "default": "Activa el equipo que tu gimnasio necesita. Con dos o más, ves el precio con descuento: entre más llevas, menos pagas." },
+    { "type": "text", "id": "button_label", "label": "Texto del botón de compra", "default": "Comprar mi paquete" },
+    { "type": "textarea", "id": "upgrade_text", "label": "Texto del producto próximo", "default": "Si hoy eliges el lector de huella, te lo cambiamos por el facial gratis en cuanto salga." },
+    { "type": "header", "content": "WhatsApp y agente" },
+    { "type": "text", "id": "agent_label", "label": "Texto del botón de agente", "default": "Cotiza con un agente" },
+    { "type": "text", "id": "agent_whatsapp", "label": "WhatsApp de ventas", "info": "Con código de país, sin espacios. Ej. 5215512345678. Activa el botón flotante de WhatsApp y el de cotizar con un agente." },
+    { "type": "url", "id": "agent_url", "label": "Enlace alterno", "info": "Se usa si no pones WhatsApp. Si está vacío, lleva al formulario de demo." },
+    { "type": "header", "content": "Descuentos por paquete" },
+    { "type": "text", "id": "tiers", "label": "Niveles de descuento", "info": "productos:porcentaje separados por comas.", "default": "2:3,3:5,4:6,5:7,6:9,7:10" },
+    { "type": "checkbox", "id": "use_codes", "label": "Aplicar código de descuento al pagar", "info": "Usa los códigos PAQUETE2 a PAQUETE7.", "default": true },
+    { "type": "text", "id": "code_prefix", "label": "Prefijo de los códigos", "default": "PAQUETE" },
+    { "type": "header", "content": "Notas" },
+    { "type": "text", "id": "note_1", "label": "Nota", "default": "Envío gratis en CDMX y Estado de México. Tarjeta de crédito, débito y OXXO." }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Producto",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Producto de Shopify" },
+        { "type": "text", "id": "title", "label": "Nombre (opcional)" },
+        { "type": "textarea", "id": "description", "label": "Descripción corta" },
+        { "type": "select", "id": "icon", "label": "Ícono", "default": "software", "options": [
+          { "value": "software", "label": "Software" }, { "value": "huella", "label": "Lector de huella" }, { "value": "facial", "label": "Lector facial" },
+          { "value": "torniquete", "label": "Torniquete" }, { "value": "computadora", "label": "Computadora" }, { "value": "instalacion", "label": "Instalación" }, { "value": "cajon", "label": "Cajón de dinero" } ] },
+        { "type": "text", "id": "badge", "label": "Dato destacado (opcional)" },
+        { "type": "checkbox", "id": "solo", "label": "Se puede comprar solo", "info": "Permite comprar este producto sin armar paquete.", "default": false },
+        { "type": "checkbox", "id": "default_on", "label": "Activado al cargar la página", "default": false },
+        { "type": "checkbox", "id": "coming_soon", "label": "Próximamente (no se puede elegir)", "default": false },
+        { "type": "text", "id": "launch_date", "label": "Fecha de lanzamiento", "info": "Formato 2026-11-21T00:00:00-06:00" },
+        { "type": "header", "content": "Respaldo si no eliges producto" },
+        { "type": "number", "id": "price", "label": "Precio (MXN)" },
+        { "type": "text", "id": "variant_id", "label": "ID de variante" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Mekka · Arma tu paquete" } ]
+}
+{% endschema %}

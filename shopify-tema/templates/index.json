@@ -1,0 +1,119 @@
+{
+  "sections": {
+    "mekka_inicio_arriba": {
+      "type": "mekka-inicio-arriba",
+      "settings": {}
+    },
+    "mekka_lanzamiento": {
+      "type": "mekka-lanzamiento",
+      "settings": {}
+    },
+    "mekka_paquete": {
+      "type": "mekka-arma-tu-paquete",
+      "blocks": {
+        "item_1": {
+          "type": "item",
+          "settings": {
+            "title": "Software Mekka Fitness Control",
+            "description": "Licencia de por vida, socios ilimitados. Pago único, 1 año de garantía y soporte por chat de por vida.",
+            "icon": "software",
+            "badge": "Socios ilimitados",
+            "solo": true,
+            "price": 5400,
+            "variant_id": "52413472080167",
+            "default_on": true
+          }
+        },
+        "item_2": {
+          "type": "item",
+          "settings": {
+            "title": "Lector de huella",
+            "description": "Acceso rápido y confiable con la huella de cada socio.",
+            "icon": "huella",
+            "badge": "Actualización gratis a facial",
+            "price": 1500,
+            "variant_id": "52413473030439",
+            "default_on": true
+          }
+        },
+        "item_3": {
+          "type": "item",
+          "settings": {
+            "title": "Lector de reconocimiento facial",
+            "description": "Acceso sin contacto, ideal para horas pico. Si eliges huella hoy, te actualizamos gratis.",
+            "icon": "facial",
+            "badge": "",
+            "coming_soon": true,
+            "launch_date": "2026-11-21T00:00:00-06:00",
+            "price": 3500,
+            "variant_id": "52413473521959"
+          }
+        },
+        "item_4": {
+          "type": "item",
+          "settings": {
+            "title": "Torniquete de acceso",
+            "description": "Control físico de entrada conectado al sistema.",
+            "icon": "torniquete",
+            "badge": "Envío gratis CDMX y Edomex",
+            "price": 18000,
+            "variant_id": "52413474144551"
+          }
+        },
+        "item_5": {
+          "type": "item",
+          "settings": {
+            "title": "Computadora reacondicionada + 2 monitores",
+            "description": "Lista para operar Mekka en tu recepción.",
+            "icon": "computadora",
+            "badge": "",
+            "price": 5500,
+            "variant_id": "52413474603303"
+          }
+        },
+        "item_6": {
+          "type": "item",
+          "settings": {
+            "title": "Instalación en sitio",
+            "description": "Instalamos y configuramos todo en tu gimnasio. Solo CDMX y Edomex.",
+            "icon": "instalacion",
+            "badge": "",
+            "price": 3500,
+            "variant_id": "52413475881255"
+          }
+        },
+        "item_7": {
+          "type": "item",
+          "settings": {
+            "title": "Cajón de dinero automático",
+            "description": "Se abre solo al registrar un cobro.",
+            "icon": "cajon",
+            "badge": "",
+            "price": 1500,
+            "variant_id": "52413477159207"
+          }
+        }
+      },
+      "block_order": [
+        "item_1",
+        "item_2",
+        "item_3",
+        "item_4",
+        "item_5",
+        "item_6",
+        "item_7"
+      ],
+      "settings": {}
+    },
+    "mekka_inicio_abajo": {
+      "type": "mekka-inicio-abajo",
+      "settings": {}
+    }
+  },
+  "order": [
+    "mekka_inicio_arriba",
+    "mekka_lanzamiento",
+    "mekka_paquete",
+    "mekka_inicio_abajo"
+  ]
+}

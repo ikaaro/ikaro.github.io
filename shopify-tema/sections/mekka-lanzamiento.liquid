@@ -1,0 +1,95 @@
+{%- comment -%}
+  Mekka · Precio de lanzamiento para los primeros 10 gyms.
+  El contador sale del inventario del producto "software-mekka-lanzamiento":
+  cada compra descuenta un lugar. Se oculta solo al agotarse o en la fecha límite.
+{%- endcomment -%}
+{%- liquid
+  assign lz_p = all_products[section.settings.handle]
+  assign lz_v = lz_p.selected_or_first_available_variant
+  assign total = section.settings.total
+  assign left = lz_v.inventory_quantity | default: 0
+  if left < 0
+    assign left = 0
+  endif
+  assign sold = total | minus: left
+  assign now_s = 'now' | date: '%s' | plus: 0
+  assign end_s = section.settings.end_date | date: '%s' | plus: 0
+  assign lz_on = false
+  if lz_p != blank and left > 0 and now_s < end_s
+    assign lz_on = true
+  endif
+-%}
+{%- if lz_on -%}
+<style>
+  #mk-lz-{{ section.id }} .mk-lz{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center;padding:clamp(28px,4.4vw,64px);border-radius:var(--mk-r-xl)}
+  #mk-lz-{{ section.id }} h2{font-family:var(--mk-f-title);font-size:var(--mk-t-h2);line-height:1.05;font-weight:500;letter-spacing:-.03em;color:#fff;margin:14px 0 16px}
+  #mk-lz-{{ section.id }} .mk-lz__price{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:6px 0 18px}
+  #mk-lz-{{ section.id }} .mk-lz__price b{font-family:var(--mk-f-title);font-size:clamp(48px,6vw,88px);font-weight:500;letter-spacing:-.04em;line-height:1;padding:0 .18em;border-radius:.22em;background:var(--mk-sage);color:#000;font-variant-numeric:tabular-nums}
+  #mk-lz-{{ section.id }} .mk-lz__price s{font-family:var(--mk-f-title);font-size:clamp(22px,2.4vw,32px);color:var(--mk-soft)}
+  #mk-lz-{{ section.id }} .mk-lz__acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+  #mk-lz-{{ section.id }} .mk-lz__count{padding:clamp(20px,3vw,32px);border-radius:var(--mk-r-lg);background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px var(--mk-line)}
+  #mk-lz-{{ section.id }} .mk-lz__big{display:flex;align-items:baseline;gap:12px;font-family:var(--mk-f-title);color:#fff}
+  #mk-lz-{{ section.id }} .mk-lz__big strong{font-size:clamp(56px,7vw,96px);font-weight:500;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+  #mk-lz-{{ section.id }} .mk-lz__big span{font-size:clamp(20px,2vw,26px);color:var(--mk-muted)}
+  #mk-lz-{{ section.id }} .mk-lz__slots{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;margin:18px 0 14px}
+  #mk-lz-{{ section.id }} .mk-lz__slots i{display:block;aspect-ratio:1;border-radius:10px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--mk-line-2)}
+  #mk-lz-{{ section.id }} .mk-lz__slots i.is-on{background:var(--mk-sage);box-shadow:none}
+  #mk-lz-{{ section.id }} .mk-lz__left{font-size:16px;color:var(--mk-text)}
+  #mk-lz-{{ section.id }} .mk-lz__left b{color:var(--mk-champ);font-weight:600}
+  #mk-lz-{{ section.id }} .mk-lz__note{margin-top:14px;font-size:14px;line-height:1.5;color:var(--mk-soft)}
+  @media (max-width:860px){#mk-lz-{{ section.id }} .mk-lz{grid-template-columns:1fr}}
+</style>
+<div class="mk" id="mk-lz-{{ section.id }}">
+  <section class="mk-sec mk-wrap" id="lanzamiento" aria-labelledby="mk-lz-h-{{ section.id }}">
+    <div class="mk-lz mk-glass">
+      <div>
+        <span class="mk-label">{{ section.settings.label }}</span>
+        <h2 id="mk-lz-h-{{ section.id }}">{{ section.settings.heading }}</h2>
+        <div class="mk-lz__price">
+          <b>{{ lz_v.price | money_without_trailing_zeros }}</b>
+          {%- if lz_v.compare_at_price > lz_v.price -%}<s>{{ lz_v.compare_at_price | money_without_trailing_zeros }}</s>{%- endif -%}
+        </div>
+        <p class="mk-lead">{{ section.settings.text }}</p>
+        <div class="mk-lz__acts">
+          <a class="mk-btn" href="{{ routes.root_url | remove_last: '/' }}/cart/{{ lz_v.id }}:1">{{ section.settings.button }}</a>
+          <a class="mk-btn mk-btn--glass" href="#paquete">Armar mi paquete</a>
+        </div>
+      </div>
+      <div class="mk-lz__count" role="group" aria-label="Lugares de lanzamiento">
+        <div class="mk-lz__big"><strong>{{ sold }}</strong><span>de {{ total }} gimnasios ya se unieron</span></div>
+        <div class="mk-lz__slots" aria-hidden="true">
+          {%- for i in (1..total) -%}<i{% if i <= sold %} class="is-on"{% endif %}></i>{%- endfor -%}
+        </div>
+        <p class="mk-lz__left">Quedan <b>{{ left }} {% if left == 1 %}lugar{% else %}lugares{% endif %}</b> · hasta el {{ section.settings.end_label }}<span data-mk-lz-days data-end="{{ section.settings.end_date | escape }}"></span></p>
+        <p class="mk-lz__note">{{ section.settings.note }}</p>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+  (function () {
+    var el = document.querySelector('#mk-lz-{{ section.id }} [data-mk-lz-days]');
+    if (!el) return;
+    var d = Math.ceil((new Date(el.dataset.end) - new Date()) / 86400000);
+    if (d > 0) el.textContent = ' (faltan ' + d + (d === 1 ? ' día)' : ' días)');
+  })();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Mekka · Lanzamiento",
+  "settings": [
+    { "type": "text", "id": "handle", "label": "Handle del producto de lanzamiento", "default": "software-mekka-lanzamiento" },
+    { "type": "number", "id": "total", "label": "Lugares totales", "default": 10 },
+    { "type": "text", "id": "end_date", "label": "Fecha límite", "info": "Formato 2026-12-20T23:59:59-06:00", "default": "2026-12-20T23:59:59-06:00" },
+    { "type": "text", "id": "end_label", "label": "Fecha límite (texto)", "default": "20 de diciembre" },
+    { "type": "text", "id": "label", "label": "Etiqueta", "default": "Precio de lanzamiento · primeros 10 gyms" },
+    { "type": "text", "id": "heading", "label": "Título", "default": "Sé de los primeros 10 gimnasios con Mekka." },
+    { "type": "textarea", "id": "text", "label": "Texto", "default": "Licencia de por vida, socios ilimitados, 1 año de garantía y soporte por chat de por vida. Mismo software, precio especial solo para los primeros 10." },
+    { "type": "text", "id": "button", "label": "Botón", "default": "Apartar mi lugar" },
+    { "type": "textarea", "id": "note", "label": "Nota", "default": "El contador se actualiza con cada compra en la tienda. Al llenarse los 10 lugares o llegar la fecha límite, el precio regresa a $5,400." }
+  ],
+  "presets": [{ "name": "Mekka · Lanzamiento" }]
+}
+{% endschema %}
