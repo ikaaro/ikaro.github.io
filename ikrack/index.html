@@ -13,438 +13,496 @@
 <link rel="icon" href="icon-192.png">
 <title>ikrack</title>
 <style>
+  /* Tipografía OCR: si existe ocra.woff2 junto a este archivo se usa; si no, monoespaciada del sistema */
+  @font-face {
+    font-family: "ikrack ocr";
+    src: local("OCR A Extended"), local("OCR-A"), local("OCR A Std"), url("ocra.woff2") format("woff2");
+    font-display: swap;
+  }
   :root {
     --bg: #0a0a0b;
-    --card: #151517;
-    --campo: #1f1f22;
-    --boton: #2c2c2f;
-    --texto: #f2f2f4;
-    --suave: #8b8b91;
+    --fondo2: #151517;
+    --fondo3: #1f1f22;
+    --texto: #d4d4d8;     /* gris muy claro, no blanco puro */
+    --tenue: #5c5c61;
     --verde: #34c759;
-    --fuente: "OCR A Extended", "OCR A Std", "OCR-A", ui-monospace, "SF Mono", Menlo, monospace;
-    --tam: 14px;
+    --fuente: "ikrack ocr", ui-monospace, "SF Mono", Menlo, monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; background: var(--bg); }
+  html, body { height: 100%; background: var(--bg); overflow: hidden; }
   body {
     color: var(--texto);
-    font: 400 var(--tam)/1.4 var(--fuente);
+    font: 400 14px/1.4 var(--fuente);
     overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
     -webkit-font-smoothing: antialiased;
   }
   button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  svg { display: block; }
 
-  /* barra superior */
-  .arriba {
-    position: sticky; top: 0; z-index: 2;
-    display: flex; gap: 8px; align-items: center;
-    padding: calc(env(safe-area-inset-top) + 10px) 14px 10px;
-    background: var(--bg);
+  /* esquinas casi invisibles */
+  .esquina {
+    position: fixed; top: calc(env(safe-area-inset-top) + 10px);
+    width: 40px; height: 40px; display: grid; place-items: center;
+    color: var(--tenue); opacity: .45; z-index: 3;
   }
+  .esquina svg { width: 15px; height: 15px; }
+  .esquina:active { opacity: .9; }
+  #btnAleatorio { left: 10px; }
+  #btnAleatorio.activo { color: var(--verde); opacity: .75; }
+  #btnEngrane { right: 10px; }
+
+  /* menú del engrane */
+  .menu {
+    position: fixed; right: 14px; top: calc(env(safe-area-inset-top) + 52px);
+    background: var(--fondo2); border-radius: 18px; padding: 6px; z-index: 4;
+    opacity: 0; transform: scale(.96); transform-origin: top right;
+    pointer-events: none; transition: opacity .15s, transform .15s;
+  }
+  .menu.abierto { opacity: 1; transform: none; pointer-events: auto; }
+  .menu button { display: block; width: 100%; text-align: left; padding: 10px 14px; border-radius: 12px; white-space: nowrap; }
+  .menu button:active { background: var(--fondo3); }
+
+  /* portada + controles */
+  main {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 38px; padding: 0 0 env(safe-area-inset-bottom);
+  }
+  .portada {
+    width: min(78vw, 380px); aspect-ratio: 1; border-radius: 22px; overflow: hidden;
+    background: var(--fondo2); display: grid; place-items: center; position: relative;
+    touch-action: pan-y;
+  }
+  .portada img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .portada.con-imagen img { display: block; }
+  .portada .punto { width: 14px; height: 14px; border-radius: 50%; background: var(--verde); }
+  .portada.con-imagen .punto { display: none; }
+  .pista {
+    position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; color: var(--tenue);
+  }
+  .controles { display: flex; align-items: center; gap: 44px; }
+  .controles button { color: var(--texto); display: grid; place-items: center; width: 52px; height: 52px; }
+  .controles button:active { opacity: .5; }
+  .controles .lado svg { width: 22px; height: 22px; }
+  .controles .centro svg { width: 30px; height: 30px; }
+
+  /* buscador */
+  .panel {
+    position: fixed; inset: 0; background: var(--bg); z-index: 5;
+    display: flex; flex-direction: column;
+    padding: calc(env(safe-area-inset-top) + 12px) 14px 0;
+    opacity: 0; pointer-events: none; transition: opacity .18s;
+  }
+  .panel.abierto { opacity: 1; pointer-events: auto; }
+  .fila-buscar { display: flex; gap: 8px; align-items: center; }
   .buscar {
-    flex: 1; height: 36px; padding: 0 16px;
-    border-radius: 18px; border: 0; outline: 0;
-    background: var(--campo); color: var(--texto);
-    font: inherit;
+    flex: 1; height: 38px; padding: 0 16px; border-radius: 19px; border: 0; outline: 0;
+    background: var(--fondo2); color: var(--texto); font: inherit;
     -webkit-user-select: text; user-select: text;
   }
-  .buscar::placeholder { color: var(--suave); }
-  .redondo {
-    width: 36px; height: 36px; border-radius: 18px;
-    background: var(--campo);
-    display: grid; place-items: center; flex: none;
-  }
-  .redondo svg { width: 16px; height: 16px; }
-  .redondo:active { background: var(--boton); }
-  .redondo.activo svg { color: var(--verde); }
-
-  /* lista */
-  .lista { list-style: none; padding: 0 8px 220px; }
-  .cancion {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 10px; border-radius: 16px;
-  }
-  .cancion:active { background: var(--card); }
-  .punto { width: 8px; height: 8px; border-radius: 50%; flex: none; background: transparent; }
-  .cancion.sonando .punto { background: var(--verde); }
-  .info { min-width: 0; flex: 1; }
-  .titulo, .artista { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .artista { color: var(--suave); }
-
-  .vacio {
-    position: fixed; inset: 0; display: grid; place-items: center;
-    color: var(--suave); text-align: center; padding: 40px; pointer-events: none;
-  }
-
-  /* reproductor */
-  .reproductor {
-    position: fixed; left: 10px; right: 10px;
-    bottom: calc(env(safe-area-inset-bottom) + 10px);
-    background: var(--card); border-radius: 28px;
-    padding: 16px 18px 14px;
-    transform: translateY(0); transition: transform .3s ease;
-  }
-  .reproductor.oculto { transform: translateY(calc(100% + 40px)); }
-  .ahora { text-align: center; }
-  .ahora .titulo { margin-bottom: 1px; }
-  .progreso { margin-top: 12px; }
-  input[type=range] {
-    -webkit-appearance: none; appearance: none;
-    width: 100%; height: 18px; background: transparent; display: block;
-  }
-  input[type=range]::-webkit-slider-runnable-track {
-    height: 4px; border-radius: 2px;
-    background: linear-gradient(to right, var(--texto) var(--p, 0%), var(--boton) var(--p, 0%));
-  }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
-    background: var(--texto); margin-top: -4px;
-  }
-  .tiempos { display: flex; justify-content: space-between; color: var(--suave); margin-top: 2px; }
-  .controles {
-    display: flex; align-items: center; justify-content: center; gap: 26px; margin-top: 6px;
-  }
-  .controles .chico { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 20px; }
-  .controles .chico svg { width: 18px; height: 18px; }
-  .controles .chico.activo { color: var(--verde); }
-  .controles .grande {
-    width: 54px; height: 54px; border-radius: 27px; background: var(--boton);
-    display: grid; place-items: center;
-  }
-  .controles .grande:active, .controles .chico:active { background: var(--campo); }
-  .controles .grande svg { width: 20px; height: 20px; }
+  .buscar::placeholder { color: var(--tenue); }
+  .buscar::-webkit-search-cancel-button, .buscar::-webkit-search-decoration { -webkit-appearance: none; display: none; }
+  .cerrar { color: var(--tenue); padding: 0 6px; height: 38px; }
+  .resultados { list-style: none; overflow-y: auto; flex: 1; padding: 10px 0 calc(env(safe-area-inset-bottom) + 20px); -webkit-overflow-scrolling: touch; }
+  .resultados li { padding: 10px 6px; border-radius: 14px; }
+  .resultados li:active { background: var(--fondo2); }
+  .resultados .t, .resultados .a { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .resultados .a { color: var(--tenue); }
+  .resultados li.sonando .t { color: var(--verde); }
 
   .aviso {
-    position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 60px);
-    transform: translateX(-50%); background: var(--boton); color: var(--texto);
+    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 24px);
+    transform: translateX(-50%); background: var(--fondo2); color: var(--texto);
     padding: 8px 16px; border-radius: 18px; opacity: 0; transition: opacity .2s;
-    pointer-events: none; z-index: 5; white-space: nowrap;
+    pointer-events: none; z-index: 6; white-space: nowrap;
   }
   .aviso.visible { opacity: 1; }
-  #archivos { display: none; }
+  .oculto-input { display: none; }
 </style>
 </head>
 <body>
 
-<div class="arriba">
-  <input class="buscar" id="buscar" type="search" placeholder="buscar" autocomplete="off" autocorrect="off" spellcheck="false">
-  <button class="redondo" id="btnAgregar" aria-label="importar canciones">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
-  </button>
+<button class="esquina" id="btnAleatorio" aria-label="aleatorio">
+  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h3l7 8h4M13 11l3 2-3 2M2 13h3l1.5-1.7M10.5 6.7 12 5h4M13 3l3 2-3 2"/></svg>
+</button>
+<button class="esquina" id="btnEngrane" aria-label="opciones">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+</button>
+
+<div class="menu" id="menu">
+  <button id="opCarpeta">seleccionar carpeta</button>
+  <button id="opBuscar">buscar</button>
 </div>
 
-<ul class="lista" id="lista"></ul>
-<div class="vacio" id="vacio">toca + para importar<br>tus canciones</div>
-<div class="aviso" id="aviso"></div>
-<input type="file" id="archivos" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg,.opus" multiple>
-
-<div class="reproductor oculto" id="reproductor">
-  <div class="ahora">
-    <div class="titulo" id="ahoraTitulo">—</div>
-    <div class="artista" id="ahoraArtista"></div>
-  </div>
-  <div class="progreso">
-    <input type="range" id="barra" min="0" max="1000" value="0" aria-label="posición">
-    <div class="tiempos"><span id="tActual">0:00</span><span id="tTotal">0:00</span></div>
+<main>
+  <div class="portada" id="portada">
+    <img id="imgPortada" alt="">
+    <span class="punto"></span>
+    <div class="pista" id="pista"></div>
   </div>
   <div class="controles">
-    <button class="chico" id="btnAleatorio" aria-label="aleatorio">
-      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h3l7 8h4M13 11l3 2-3 2M2 13h3l1.5-1.7M10.5 6.7 12 5h4M13 3l3 2-3 2"/></svg>
+    <button class="lado" id="btnAnterior" aria-label="anterior">
+      <svg viewBox="0 0 18 18" fill="currentColor"><path d="M3.5 3h1.6v12H3.5zM15 3.5v11L6.5 9z"/></svg>
     </button>
-    <button class="chico" id="btnAnterior" aria-label="anterior">
-      <svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 3h1.6v12H4zM15 3.5v11L7 9z"/></svg>
+    <button class="centro" id="btnPlay" aria-label="reproducir">
+      <svg id="icoPlay" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 3v14L17 10z"/></svg>
+      <svg id="icoPausa" viewBox="0 0 20 20" fill="currentColor" style="display:none"><path d="M4.5 3h3.6v14H4.5zM11.9 3h3.6v14h-3.6z"/></svg>
     </button>
-    <button class="grande" id="btnPlay" aria-label="reproducir">
-      <svg id="icoPlay" viewBox="0 0 20 20" fill="currentColor"><path d="M6 3.5v13L17 10z"/></svg>
-      <svg id="icoPausa" viewBox="0 0 20 20" fill="currentColor" style="display:none"><path d="M5 3h3.4v14H5zM11.6 3H15v14h-3.4z"/></svg>
-    </button>
-    <button class="chico" id="btnSiguiente" aria-label="siguiente">
-      <svg viewBox="0 0 18 18" fill="currentColor"><path d="M12.4 3H14v12h-1.6zM3 3.5v11L11 9z"/></svg>
-    </button>
-    <button class="chico" id="btnRepetir" aria-label="repetir">
-      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V7a2 2 0 0 1 2-2h10M12.5 2.5 15 5l-2.5 2.5M15 10v1a2 2 0 0 1-2 2H3M5.5 15.5 3 13l2.5-2.5"/></svg>
+    <button class="lado" id="btnSiguiente" aria-label="siguiente">
+      <svg viewBox="0 0 18 18" fill="currentColor"><path d="M12.9 3h1.6v12h-1.6zM3 3.5v11L11.5 9z"/></svg>
     </button>
   </div>
+</main>
+
+<div class="panel" id="panel">
+  <div class="fila-buscar">
+    <input class="buscar" id="buscar" type="search" placeholder="buscar" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="cerrar" id="btnCerrar">cerrar</button>
+  </div>
+  <ul class="resultados" id="resultados"></ul>
 </div>
+
+<div class="aviso" id="aviso"></div>
+<input class="oculto-input" type="file" id="inCarpeta" webkitdirectory multiple>
 
 <script>
 (() => {
   const $ = id => document.getElementById(id);
   const audio = new Audio();
   audio.preload = "auto";
+  const EXT = /\.(mp3|m4a|aac|wav|flac|ogg|opus|aiff?|alac)$/i;
 
-  // ---------- almacenamiento (IndexedDB) ----------
+  // ====================== etiquetas y portadas ======================
+  const ascii = (b, i, n) => String.fromCharCode(...b.subarray(i, i + n));
+  const u32 = (b, i) => ((b[i] << 24) | (b[i + 1] << 16) | (b[i + 2] << 8) | b[i + 3]) >>> 0;
+  const u32le = (b, i) => (b[i] | (b[i + 1] << 8) | (b[i + 2] << 16) | (b[i + 3] << 24)) >>> 0;
+  const syncsafe = (b, i) => (b[i] << 21) | (b[i + 1] << 14) | (b[i + 2] << 7) | b[i + 3];
+  const tipoImagen = d => d[0] === 0x89 && d[1] === 0x50 ? "image/png" : "image/jpeg";
+
+  function decodificar(enc, datos) {
+    let nombre = ["iso-8859-1", "utf-16", "utf-16be", "utf-8"][enc] || "utf-8";
+    if (enc === 1 && datos[0] === 0xfe && datos[1] === 0xff) nombre = "utf-16be";
+    try { return new TextDecoder(nombre).decode(datos).replace(/\u0000/g, "").replace(/^﻿/, "").trim(); }
+    catch (e) { return ""; }
+  }
+
+  function leerID3(b) {
+    const ver = b[3], flags = b[5], fin = Math.min(b.length, syncsafe(b, 6) + 10);
+    let pos = 10, r = {};
+    if (flags & 0x40) pos += ver === 4 ? syncsafe(b, 10) : u32(b, 10) + 4;
+    while (pos + 10 < fin) {
+      let id, tam, cab;
+      if (ver === 2) { id = ascii(b, pos, 3); tam = (b[pos + 3] << 16) | (b[pos + 4] << 8) | b[pos + 5]; cab = 6; }
+      else { id = ascii(b, pos, 4); tam = ver === 4 ? syncsafe(b, pos + 4) : u32(b, pos + 4); cab = 10; }
+      if (!id.charCodeAt(0) || tam <= 0 || pos + cab + tam > fin) break;
+      const d = b.subarray(pos + cab, pos + cab + tam);
+      if ((id === "TIT2" || id === "TT2") && !r.titulo) r.titulo = decodificar(d[0], d.subarray(1));
+      else if ((id === "TPE1" || id === "TP1") && !r.artista) r.artista = decodificar(d[0], d.subarray(1));
+      else if ((id === "APIC" || id === "PIC") && !r.portada) {
+        const enc = d[0]; let i;
+        if (id === "PIC") i = 4;
+        else { i = d.indexOf(0, 1) + 1; }
+        i += 1; // tipo de imagen
+        if (enc === 0 || enc === 3) i = d.indexOf(0, i) + 1;
+        else { while (i + 1 < d.length && !(d[i] === 0 && d[i + 1] === 0)) i += 2; i += 2; }
+        const img = d.subarray(i);
+        if (img.length > 100) r.portada = new Blob([img], { type: tipoImagen(img) });
+      }
+      pos += cab + tam;
+    }
+    return r;
+  }
+
+  function leerFLAC(b) {
+    let pos = 4, r = {};
+    while (pos + 4 < b.length) {
+      const cab = b[pos], ultimo = cab & 0x80, tipo = cab & 0x7f;
+      const tam = (b[pos + 1] << 16) | (b[pos + 2] << 8) | b[pos + 3];
+      const p = pos + 4;
+      if (tipo === 6 && !r.portada) {
+        let i = p + 4; const ml = u32(b, i); i += 4 + ml;
+        const dl = u32(b, i); i += 4 + dl + 16;
+        const len = u32(b, i); i += 4;
+        const img = b.subarray(i, i + len);
+        if (img.length > 100) r.portada = new Blob([img], { type: tipoImagen(img) });
+      } else if (tipo === 4) {
+        let i = p; i += 4 + u32le(b, i);
+        const n = u32le(b, i); i += 4;
+        for (let k = 0; k < n && i < p + tam; k++) {
+          const l = u32le(b, i); i += 4;
+          const txt = new TextDecoder().decode(b.subarray(i, i + l)); i += l;
+          const eq = txt.indexOf("="); const clave = txt.slice(0, eq).toUpperCase(), val = txt.slice(eq + 1);
+          if (clave === "TITLE" && !r.titulo) r.titulo = val;
+          if (clave === "ARTIST" && !r.artista) r.artista = val;
+        }
+      }
+      pos = p + tam;
+      if (ultimo) break;
+    }
+    return r;
+  }
+
+  function buscarBytes(b, patron, desde = 0) {
+    outer: for (let i = desde; i <= b.length - patron.length; i++) {
+      for (let j = 0; j < patron.length; j++) if (b[i + j] !== patron[j]) continue outer;
+      return i;
+    }
+    return -1;
+  }
+  function leerMP4(b) {
+    const r = {};
+    const datoDe = nombre => {
+      const k = buscarBytes(b, nombre);
+      if (k < 0 || ascii(b, k + 8, 4) !== "data") return null;
+      const tam = u32(b, k + 4);
+      return b.subarray(k + 20, k + 4 + tam);
+    };
+    const img = datoDe([0x63, 0x6f, 0x76, 0x72]); // covr
+    if (img && img.length > 100) r.portada = new Blob([img], { type: tipoImagen(img) });
+    const t = datoDe([0xa9, 0x6e, 0x61, 0x6d]); if (t) r.titulo = new TextDecoder().decode(t);
+    const a = datoDe([0xa9, 0x41, 0x52, 0x54]); if (a) r.artista = new TextDecoder().decode(a);
+    return r;
+  }
+
+  async function leerEtiquetas(archivo) {
+    try {
+      const cab = new Uint8Array(await archivo.slice(0, 12).arrayBuffer());
+      if (ascii(cab, 0, 3) === "ID3") {
+        const tam = syncsafe(cab, 6) + 10;
+        return leerID3(new Uint8Array(await archivo.slice(0, tam).arrayBuffer()));
+      }
+      if (ascii(cab, 0, 4) === "fLaC") return leerFLAC(new Uint8Array(await archivo.slice(0, 16 * 1024 * 1024).arrayBuffer()));
+      if (ascii(cab, 4, 4) === "ftyp") return leerMP4(new Uint8Array(await archivo.arrayBuffer()));
+    } catch (e) {}
+    return {};
+  }
+
+  // ====================== almacenamiento ======================
   let db;
   function abrirDB() {
     return new Promise((ok, mal) => {
-      const r = indexedDB.open("ikrack", 1);
+      const r = indexedDB.open("ikrack", 2);
       r.onupgradeneeded = () => {
         const d = r.result;
-        d.createObjectStore("meta", { keyPath: "id", autoIncrement: true });
-        d.createObjectStore("archivos");
+        if (!d.objectStoreNames.contains("meta")) d.createObjectStore("meta", { keyPath: "id", autoIncrement: true });
+        if (!d.objectStoreNames.contains("archivos")) d.createObjectStore("archivos");
+        if (!d.objectStoreNames.contains("portadas")) d.createObjectStore("portadas");
       };
       r.onsuccess = () => ok(r.result);
       r.onerror = () => mal(r.error);
     });
   }
-  function tx(tiendas, modo = "readonly") { return db.transaction(tiendas, modo); }
-  function pedir(req) { return new Promise((ok, mal) => { req.onsuccess = () => ok(req.result); req.onerror = () => mal(req.error); }); }
+  const pedir = req => new Promise((ok, mal) => { req.onsuccess = () => ok(req.result); req.onerror = () => mal(req.error); });
+  const tienda = (n, modo = "readonly") => db.transaction(n, modo).objectStore(n);
+  const terminar = t => new Promise((ok, mal) => { t.oncomplete = ok; t.onerror = () => mal(t.error); t.onabort = () => mal(t.error); });
 
   async function guardarCancion(archivo) {
     const base = archivo.name.replace(/\.[^.]+$/, "").trim();
+    const et = await leerEtiquetas(archivo);
     const i = base.indexOf(" - ");
     const meta = i > 0
       ? { artista: base.slice(0, i).trim(), titulo: base.slice(i + 3).trim() }
-      : { artista: "", titulo: base };
-    meta.agregada = Date.now();
-    const t = tx(["meta", "archivos"], "readwrite");
+      : { artista: et.artista || "", titulo: et.titulo || base };
+    meta.clave = base.toLowerCase();
+    meta.conPortada = !!et.portada;
+    const t = db.transaction(["meta", "archivos", "portadas"], "readwrite");
     const id = await pedir(t.objectStore("meta").add(meta));
     t.objectStore("archivos").put(archivo, id);
-    await new Promise((ok, mal) => { t.oncomplete = ok; t.onerror = () => mal(t.error); });
-    return id;
+    if (et.portada) t.objectStore("portadas").put(et.portada, id);
+    await terminar(t);
   }
-  async function borrarCancion(id) {
-    const t = tx(["meta", "archivos"], "readwrite");
-    t.objectStore("meta").delete(id);
-    t.objectStore("archivos").delete(id);
-    await new Promise(ok => { t.oncomplete = ok; });
-  }
-  const leerArchivo = id => pedir(tx("archivos").objectStore("archivos").get(id));
-  const leerTodas = () => pedir(tx("meta").objectStore("meta").getAll());
 
-  // ---------- estado ----------
-  let canciones = [];       // todas, ordenadas
-  let visibles = [];        // filtradas por búsqueda
-  let actual = null;        // id sonando
-  let urlActual = null;
-  let aleatorio = false, repetir = false;
-  let historial = [];
+  // ====================== estado ======================
+  let canciones = [], actual = null, aleatorio = false, historial = [];
+  let urlAudio = null, urlPortada = null;
+  const pref = {
+    get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  };
 
-  const guardarPref = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  const leerPref = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
-
-  // ---------- interfaz ----------
   function avisar(texto) {
     const a = $("aviso");
-    a.textContent = texto;
-    a.classList.add("visible");
-    clearTimeout(avisar.t);
-    avisar.t = setTimeout(() => a.classList.remove("visible"), 1800);
-  }
-  const fmt = s => !isFinite(s) ? "0:00" : `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-
-  function pintarLista() {
-    const q = $("buscar").value.trim().toLowerCase();
-    visibles = q ? canciones.filter(c => (c.titulo + " " + c.artista).toLowerCase().includes(q)) : canciones;
-    const ul = $("lista");
-    ul.textContent = "";
-    const frag = document.createDocumentFragment();
-    for (const c of visibles) {
-      const li = document.createElement("li");
-      li.className = "cancion" + (c.id === actual ? " sonando" : "");
-      li.dataset.id = c.id;
-      li.innerHTML = '<span class="punto"></span><div class="info"><div class="titulo"></div><div class="artista"></div></div>';
-      li.querySelector(".titulo").textContent = c.titulo;
-      li.querySelector(".artista").textContent = c.artista || " ";
-      frag.appendChild(li);
-    }
-    ul.appendChild(frag);
-    $("vacio").style.display = canciones.length ? "none" : "grid";
+    a.textContent = texto; a.classList.add("visible");
+    clearTimeout(avisar.t); avisar.t = setTimeout(() => a.classList.remove("visible"), 1800);
   }
 
   async function recargar() {
-    canciones = (await leerTodas()).sort((a, b) =>
+    canciones = (await pedir(tienda("meta").getAll())).sort((a, b) =>
       (a.artista + a.titulo).localeCompare(b.artista + b.titulo, "es", { sensitivity: "base" }));
-    pintarLista();
+    $("pista").textContent = canciones.length ? "" : "⚙ → seleccionar carpeta";
   }
 
-  // ---------- reproducción ----------
+  // ====================== reproducción ======================
+  async function mostrarPortada(c) {
+    let img = await pedir(tienda("portadas").get(c.id));
+    if (!img && c.conPortada === undefined) {            // canciones importadas antes: buscar portada ahora
+      const archivo = await pedir(tienda("archivos").get(c.id));
+      const et = archivo ? await leerEtiquetas(archivo) : {};
+      img = et.portada || null;
+      c.conPortada = !!img;
+      const t = db.transaction(["meta", "portadas"], "readwrite");
+      t.objectStore("meta").put(c);
+      if (img) t.objectStore("portadas").put(img, c.id);
+    }
+    if (urlPortada) URL.revokeObjectURL(urlPortada);
+    urlPortada = img ? URL.createObjectURL(img) : null;
+    const p = $("portada");
+    if (urlPortada) { $("imgPortada").src = urlPortada; p.classList.add("con-imagen"); }
+    else { $("imgPortada").removeAttribute("src"); p.classList.remove("con-imagen"); }
+    return urlPortada;
+  }
+
   async function reproducir(id, empezar = true) {
     const c = canciones.find(x => x.id === id);
     if (!c) return;
-    const archivo = await leerArchivo(id);
+    const archivo = await pedir(tienda("archivos").get(id));
     if (!archivo) { avisar("no encontré el archivo"); return; }
-    if (urlActual) URL.revokeObjectURL(urlActual);
-    urlActual = URL.createObjectURL(archivo);
-    audio.src = urlActual;
-    if (actual !== null && actual !== id) historial.push(actual);
+    if (urlAudio) URL.revokeObjectURL(urlAudio);
+    urlAudio = URL.createObjectURL(archivo);
+    audio.src = urlAudio;
+    if (actual !== null && actual !== id) { historial.push(actual); if (historial.length > 200) historial.shift(); }
     actual = id;
-    guardarPref("ultima", id);
+    pref.set("ultima", id);
 
-    $("ahoraTitulo").textContent = c.titulo;
-    $("ahoraArtista").textContent = c.artista;
-    $("reproductor").classList.remove("oculto");
-    document.querySelectorAll(".cancion.sonando").forEach(e => e.classList.remove("sonando"));
-    const fila = document.querySelector(`.cancion[data-id="${id}"]`);
-    if (fila) fila.classList.add("sonando");
-
+    const arte = await mostrarPortada(c);
     if ("mediaSession" in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: c.titulo, artist: c.artista, album: "ikrack",
-        artwork: [{ src: "icon-512.png", sizes: "512x512", type: "image/png" }],
+        artwork: [{ src: arte || "icon-512.png", sizes: "512x512" }],
       });
     }
-    if (empezar) {
-      try { await audio.play(); } catch (e) {}
-    }
+    if (empezar) { try { await audio.play(); } catch (e) {} }
   }
 
-  function cola() { return visibles.length ? visibles : canciones; }
-
-  function siguiente(automatico = false) {
-    const lista = cola();
-    if (!lista.length) return;
-    if (automatico && repetir && actual !== null) { audio.currentTime = 0; audio.play(); return; }
-    let i = lista.findIndex(c => c.id === actual);
-    if (aleatorio && lista.length > 1) {
-      let j; do { j = Math.floor(Math.random() * lista.length); } while (j === i);
-      i = j;
-    } else {
-      i = (i + 1) % lista.length;
-    }
-    reproducir(lista[i].id);
+  function siguiente() {
+    if (!canciones.length) return;
+    let i = canciones.findIndex(c => c.id === actual);
+    if (aleatorio && canciones.length > 1) {
+      let j; do { j = Math.floor(Math.random() * canciones.length); } while (j === i); i = j;
+    } else i = (i + 1) % canciones.length;
+    reproducir(canciones[i].id);
   }
-
   function anterior() {
     if (audio.currentTime > 3) { audio.currentTime = 0; return; }
-    const lista = cola();
-    if (!lista.length) return;
+    if (!canciones.length) return;
     if (aleatorio && historial.length) { const id = historial.pop(); actual = null; reproducir(id); return; }
-    let i = lista.findIndex(c => c.id === actual);
-    i = (i - 1 + lista.length) % lista.length;
-    reproducir(lista[i].id);
+    let i = canciones.findIndex(c => c.id === actual);
+    i = (i - 1 + canciones.length) % canciones.length;
+    reproducir(canciones[i].id);
   }
-
   function alternar() {
-    if (actual === null) { if (cola().length) reproducir(cola()[0].id); return; }
+    if (actual === null) { if (canciones.length) (aleatorio ? siguiente() : reproducir(canciones[0].id)); return; }
     audio.paused ? audio.play() : audio.pause();
   }
-
   function pintarPlay() {
-    const pausado = audio.paused;
-    $("icoPlay").style.display = pausado ? "" : "none";
-    $("icoPausa").style.display = pausado ? "none" : "";
-    if ("mediaSession" in navigator) navigator.mediaSession.playbackState = pausado ? "paused" : "playing";
+    $("icoPlay").style.display = audio.paused ? "" : "none";
+    $("icoPausa").style.display = audio.paused ? "none" : "";
+    if ("mediaSession" in navigator) navigator.mediaSession.playbackState = audio.paused ? "paused" : "playing";
   }
-
-  let arrastrando = false;
-  function pintarProgreso() {
-    const d = audio.duration, t = audio.currentTime;
-    if (!arrastrando && isFinite(d) && d > 0) {
-      const v = Math.round(t / d * 1000);
-      $("barra").value = v;
-      $("barra").style.setProperty("--p", v / 10 + "%");
-    }
-    $("tActual").textContent = fmt(t);
-    $("tTotal").textContent = fmt(d);
-    if ("mediaSession" in navigator && navigator.mediaSession.setPositionState && isFinite(d) && d > 0) {
-      try { navigator.mediaSession.setPositionState({ duration: d, position: Math.min(t, d), playbackRate: 1 }); } catch (e) {}
-    }
-  }
-
   audio.addEventListener("play", pintarPlay);
   audio.addEventListener("pause", pintarPlay);
-  audio.addEventListener("timeupdate", pintarProgreso);
-  audio.addEventListener("loadedmetadata", pintarProgreso);
-  audio.addEventListener("ended", () => siguiente(true));
-
-  const barra = $("barra");
-  barra.addEventListener("input", () => {
-    arrastrando = true;
-    barra.style.setProperty("--p", barra.value / 10 + "%");
-    if (isFinite(audio.duration)) $("tActual").textContent = fmt(barra.value / 1000 * audio.duration);
+  audio.addEventListener("ended", siguiente);
+  audio.addEventListener("timeupdate", () => {
+    const d = audio.duration;
+    if ("mediaSession" in navigator && navigator.mediaSession.setPositionState && isFinite(d) && d > 0) {
+      try { navigator.mediaSession.setPositionState({ duration: d, position: Math.min(audio.currentTime, d), playbackRate: 1 }); } catch (e) {}
+    }
   });
-  barra.addEventListener("change", () => {
-    if (isFinite(audio.duration)) audio.currentTime = barra.value / 1000 * audio.duration;
-    arrastrando = false;
-  });
-
   if ("mediaSession" in navigator) {
-    const ms = navigator.mediaSession;
-    const h = (a, f) => { try { ms.setActionHandler(a, f); } catch (e) {} };
-    h("play", () => audio.play());
-    h("pause", () => audio.pause());
-    h("previoustrack", anterior);
-    h("nexttrack", () => siguiente());
+    const h = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch (e) {} };
+    h("play", () => audio.play()); h("pause", () => audio.pause());
+    h("previoustrack", anterior); h("nexttrack", siguiente);
     h("seekto", d => { audio.currentTime = d.seekTime; });
   }
 
-  // ---------- botones ----------
+  // ====================== controles ======================
   $("btnPlay").onclick = alternar;
-  $("btnSiguiente").onclick = () => siguiente();
+  $("btnSiguiente").onclick = siguiente;
   $("btnAnterior").onclick = anterior;
   $("btnAleatorio").onclick = () => {
-    aleatorio = !aleatorio; guardarPref("aleatorio", aleatorio);
+    aleatorio = !aleatorio; pref.set("aleatorio", aleatorio);
     $("btnAleatorio").classList.toggle("activo", aleatorio);
+    avisar(aleatorio ? "aleatorio" : "en orden");
   };
-  $("btnRepetir").onclick = () => {
-    repetir = !repetir; guardarPref("repetir", repetir);
-    $("btnRepetir").classList.toggle("activo", repetir);
-  };
-  $("buscar").addEventListener("input", pintarLista);
 
-  // tocar para reproducir, mantener presionado para borrar
-  let presion = null, borrando = false;
-  const lista = $("lista");
-  lista.addEventListener("pointerdown", e => {
-    const fila = e.target.closest(".cancion");
-    if (!fila) return;
-    borrando = false;
-    presion = setTimeout(async () => {
-      borrando = true;
-      const id = Number(fila.dataset.id);
-      const c = canciones.find(x => x.id === id);
-      if (c && confirm(`¿borrar "${c.titulo}"?`)) {
-        if (id === actual) { audio.pause(); audio.removeAttribute("src"); actual = null; $("reproductor").classList.add("oculto"); }
-        await borrarCancion(id);
-        await recargar();
-        avisar("borrada");
-      }
-    }, 600);
+  // deslizar la portada: izquierda = siguiente, derecha = anterior; tocar = play/pausa
+  let x0 = null;
+  const portada = $("portada");
+  portada.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+  portada.addEventListener("touchend", e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (dx < -50) siguiente(); else if (dx > 50) anterior();
   });
-  ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
-    lista.addEventListener(ev, () => clearTimeout(presion)));
-  lista.addEventListener("scroll", () => clearTimeout(presion), { passive: true });
-  window.addEventListener("scroll", () => clearTimeout(presion), { passive: true });
-  lista.addEventListener("click", e => {
-    if (borrando) { borrando = false; return; }
-    const fila = e.target.closest(".cancion");
-    if (fila) reproducir(Number(fila.dataset.id));
-  });
-  lista.addEventListener("contextmenu", e => e.preventDefault());
+  portada.addEventListener("click", alternar);
 
-  // importar
-  $("btnAgregar").onclick = () => $("archivos").click();
-  $("archivos").addEventListener("change", async e => {
-    const archivos = [...e.target.files];
+  // menú del engrane
+  const menu = $("menu");
+  $("btnEngrane").onclick = e => { e.stopPropagation(); menu.classList.toggle("abierto"); };
+  document.addEventListener("click", e => { if (!menu.contains(e.target)) menu.classList.remove("abierto"); });
+
+  // seleccionar carpeta
+  $("opCarpeta").onclick = () => { menu.classList.remove("abierto"); $("inCarpeta").click(); };
+  $("inCarpeta").addEventListener("change", async e => {
+    const archivos = [...e.target.files].filter(f => EXT.test(f.name));
     e.target.value = "";
-    if (!archivos.length) return;
-    const existentes = new Set(canciones.map(c => (c.artista + " - " + c.titulo).toLowerCase()));
-    let n = 0, repetidas = 0;
+    if (!archivos.length) { avisar("no encontré canciones ahí"); return; }
+    const existentes = new Set(canciones.map(c => c.clave || (c.artista ? c.artista + " - " + c.titulo : c.titulo).toLowerCase()));
+    let n = 0, ya = 0;
     for (const a of archivos) {
-      const base = a.name.replace(/\.[^.]+$/, "").trim().toLowerCase();
-      const clave = base.includes(" - ") ? base : " - " + base;
-      if (existentes.has(clave)) { repetidas++; continue; }
-      avisar(`importando ${++n}/${archivos.length}`);
-      try { await guardarCancion(a); existentes.add(clave); }
+      const clave = a.name.replace(/\.[^.]+$/, "").trim().toLowerCase();
+      if (existentes.has(clave)) { ya++; continue; }
+      avisar(`importando ${n + 1}/${archivos.length - ya}`);
+      try { await guardarCancion(a); existentes.add(clave); n++; }
       catch (err) { avisar("no hay espacio suficiente"); break; }
     }
     await recargar();
-    avisar(repetidas ? `${n} nuevas · ${repetidas} ya estaban` : `${n} importadas`);
+    avisar(ya ? `${n} nuevas · ${ya} ya estaban` : `${n} canciones`);
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+    if (actual === null && canciones.length) reproducir(canciones[0].id, false);
   });
 
-  // ---------- inicio ----------
+  // buscar
+  const panel = $("panel"), buscar = $("buscar"), resultados = $("resultados");
+  function pintarResultados() {
+    const q = buscar.value.trim().toLowerCase();
+    const lista = q ? canciones.filter(c => (c.titulo + " " + c.artista).toLowerCase().includes(q)) : canciones;
+    resultados.textContent = "";
+    const frag = document.createDocumentFragment();
+    for (const c of lista.slice(0, 400)) {
+      const li = document.createElement("li");
+      li.dataset.id = c.id;
+      if (c.id === actual) li.className = "sonando";
+      const t = document.createElement("div"); t.className = "t"; t.textContent = c.titulo;
+      const a = document.createElement("div"); a.className = "a"; a.textContent = c.artista || " ";
+      li.append(t, a); frag.appendChild(li);
+    }
+    resultados.appendChild(frag);
+  }
+  $("opBuscar").onclick = () => {
+    menu.classList.remove("abierto");
+    buscar.value = ""; pintarResultados();
+    panel.classList.add("abierto");
+    setTimeout(() => buscar.focus(), 50);
+  };
+  $("btnCerrar").onclick = () => { panel.classList.remove("abierto"); buscar.blur(); };
+  buscar.addEventListener("input", pintarResultados);
+  resultados.addEventListener("click", e => {
+    const li = e.target.closest("li"); if (!li) return;
+    reproducir(Number(li.dataset.id));
+    panel.classList.remove("abierto"); buscar.blur();
+  });
+
+  // ====================== inicio ======================
   (async () => {
     db = await abrirDB();
-    aleatorio = leerPref("aleatorio", false);
-    repetir = leerPref("repetir", false);
+    aleatorio = pref.get("aleatorio", false);
     $("btnAleatorio").classList.toggle("activo", aleatorio);
-    $("btnRepetir").classList.toggle("activo", repetir);
     await recargar();
-    const ultima = leerPref("ultima", null);
+    const ultima = pref.get("ultima", null);
     if (ultima !== null && canciones.some(c => c.id === ultima)) reproducir(ultima, false);
+    else if (canciones.length) reproducir(canciones[0].id, false);
   })();
 
   if ("serviceWorker" in navigator) {
