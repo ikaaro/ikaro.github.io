@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ikrack">
+<meta name="theme-color" content="#0a0a0b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>ikrack</title>
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --card: #151517;
+    --campo: #1f1f22;
+    --boton: #2c2c2f;
+    --texto: #f2f2f4;
+    --suave: #8b8b91;
+    --verde: #34c759;
+    --fuente: "OCR A Extended", "OCR A Std", "OCR-A", ui-monospace, "SF Mono", Menlo, monospace;
+    --tam: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); }
+  body {
+    color: var(--texto);
+    font: 400 var(--tam)/1.4 var(--fuente);
+    overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  /* barra superior */
+  .arriba {
+    position: sticky; top: 0; z-index: 2;
+    display: flex; gap: 8px; align-items: center;
+    padding: calc(env(safe-area-inset-top) + 10px) 14px 10px;
+    background: var(--bg);
+  }
+  .buscar {
+    flex: 1; height: 36px; padding: 0 16px;
+    border-radius: 18px; border: 0; outline: 0;
+    background: var(--campo); color: var(--texto);
+    font: inherit;
+    -webkit-user-select: text; user-select: text;
+  }
+  .buscar::placeholder { color: var(--suave); }
+  .redondo {
+    width: 36px; height: 36px; border-radius: 18px;
+    background: var(--campo);
+    display: grid; place-items: center; flex: none;
+  }
+  .redondo svg { width: 16px; height: 16px; }
+  .redondo:active { background: var(--boton); }
+  .redondo.activo svg { color: var(--verde); }
+
+  /* lista */
+  .lista { list-style: none; padding: 0 8px 220px; }
+  .cancion {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 10px; border-radius: 16px;
+  }
+  .cancion:active { background: var(--card); }
+  .punto { width: 8px; height: 8px; border-radius: 50%; flex: none; background: transparent; }
+  .cancion.sonando .punto { background: var(--verde); }
+  .info { min-width: 0; flex: 1; }
+  .titulo, .artista { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .artista { color: var(--suave); }
+
+  .vacio {
+    position: fixed; inset: 0; display: grid; place-items: center;
+    color: var(--suave); text-align: center; padding: 40px; pointer-events: none;
+  }
+
+  /* reproductor */
+  .reproductor {
+    position: fixed; left: 10px; right: 10px;
+    bottom: calc(env(safe-area-inset-bottom) + 10px);
+    background: var(--card); border-radius: 28px;
+    padding: 16px 18px 14px;
+    transform: translateY(0); transition: transform .3s ease;
+  }
+  .reproductor.oculto { transform: translateY(calc(100% + 40px)); }
+  .ahora { text-align: center; }
+  .ahora .titulo { margin-bottom: 1px; }
+  .progreso { margin-top: 12px; }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 18px; background: transparent; display: block;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(to right, var(--texto) var(--p, 0%), var(--boton) var(--p, 0%));
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--texto); margin-top: -4px;
+  }
+  .tiempos { display: flex; justify-content: space-between; color: var(--suave); margin-top: 2px; }
+  .controles {
+    display: flex; align-items: center; justify-content: center; gap: 26px; margin-top: 6px;
+  }
+  .controles .chico { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 20px; }
+  .controles .chico svg { width: 18px; height: 18px; }
+  .controles .chico.activo { color: var(--verde); }
+  .controles .grande {
+    width: 54px; height: 54px; border-radius: 27px; background: var(--boton);
+    display: grid; place-items: center;
+  }
+  .controles .grande:active, .controles .chico:active { background: var(--campo); }
+  .controles .grande svg { width: 20px; height: 20px; }
+
+  .aviso {
+    position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 60px);
+    transform: translateX(-50%); background: var(--boton); color: var(--texto);
+    padding: 8px 16px; border-radius: 18px; opacity: 0; transition: opacity .2s;
+    pointer-events: none; z-index: 5; white-space: nowrap;
+  }
+  .aviso.visible { opacity: 1; }
+  #archivos { display: none; }
+</style>
+</head>
+<body>
+
+<div class="arriba">
+  <input class="buscar" id="buscar" type="search" placeholder="buscar" autocomplete="off" autocorrect="off" spellcheck="false">
+  <button class="redondo" id="btnAgregar" aria-label="importar canciones">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
+  </button>
+</div>
+
+<ul class="lista" id="lista"></ul>
+<div class="vacio" id="vacio">toca + para importar<br>tus canciones</div>
+<div class="aviso" id="aviso"></div>
+<input type="file" id="archivos" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg,.opus" multiple>
+
+<div class="reproductor oculto" id="reproductor">
+  <div class="ahora">
+    <div class="titulo" id="ahoraTitulo">—</div>
+    <div class="artista" id="ahoraArtista"></div>
+  </div>
+  <div class="progreso">
+    <input type="range" id="barra" min="0" max="1000" value="0" aria-label="posición">
+    <div class="tiempos"><span id="tActual">0:00</span><span id="tTotal">0:00</span></div>
+  </div>
+  <div class="controles">
+    <button class="chico" id="btnAleatorio" aria-label="aleatorio">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h3l7 8h4M13 11l3 2-3 2M2 13h3l1.5-1.7M10.5 6.7 12 5h4M13 3l3 2-3 2"/></svg>
+    </button>
+    <button class="chico" id="btnAnterior" aria-label="anterior">
+      <svg viewBox="0 0 18 18" fill="currentColor"><path d="M4 3h1.6v12H4zM15 3.5v11L7 9z"/></svg>
+    </button>
+    <button class="grande" id="btnPlay" aria-label="reproducir">
+      <svg id="icoPlay" viewBox="0 0 20 20" fill="currentColor"><path d="M6 3.5v13L17 10z"/></svg>
+      <svg id="icoPausa" viewBox="0 0 20 20" fill="currentColor" style="display:none"><path d="M5 3h3.4v14H5zM11.6 3H15v14h-3.4z"/></svg>
+    </button>
+    <button class="chico" id="btnSiguiente" aria-label="siguiente">
+      <svg viewBox="0 0 18 18" fill="currentColor"><path d="M12.4 3H14v12h-1.6zM3 3.5v11L11 9z"/></svg>
+    </button>
+    <button class="chico" id="btnRepetir" aria-label="repetir">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V7a2 2 0 0 1 2-2h10M12.5 2.5 15 5l-2.5 2.5M15 10v1a2 2 0 0 1-2 2H3M5.5 15.5 3 13l2.5-2.5"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const audio = new Audio();
+  audio.preload = "auto";
+
+  // ---------- almacenamiento (IndexedDB) ----------
+  let db;
+  function abrirDB() {
+    return new Promise((ok, mal) => {
+      const r = indexedDB.open("ikrack", 1);
+      r.onupgradeneeded = () => {
+        const d = r.result;
+        d.createObjectStore("meta", { keyPath: "id", autoIncrement: true });
+        d.createObjectStore("archivos");
+      };
+      r.onsuccess = () => ok(r.result);
+      r.onerror = () => mal(r.error);
+    });
+  }
+  function tx(tiendas, modo = "readonly") { return db.transaction(tiendas, modo); }
+  function pedir(req) { return new Promise((ok, mal) => { req.onsuccess = () => ok(req.result); req.onerror = () => mal(req.error); }); }
+
+  async function guardarCancion(archivo) {
+    const base = archivo.name.replace(/\.[^.]+$/, "").trim();
+    const i = base.indexOf(" - ");
+    const meta = i > 0
+      ? { artista: base.slice(0, i).trim(), titulo: base.slice(i + 3).trim() }
+      : { artista: "", titulo: base };
+    meta.agregada = Date.now();
+    const t = tx(["meta", "archivos"], "readwrite");
+    const id = await pedir(t.objectStore("meta").add(meta));
+    t.objectStore("archivos").put(archivo, id);
+    await new Promise((ok, mal) => { t.oncomplete = ok; t.onerror = () => mal(t.error); });
+    return id;
+  }
+  async function borrarCancion(id) {
+    const t = tx(["meta", "archivos"], "readwrite");
+    t.objectStore("meta").delete(id);
+    t.objectStore("archivos").delete(id);
+    await new Promise(ok => { t.oncomplete = ok; });
+  }
+  const leerArchivo = id => pedir(tx("archivos").objectStore("archivos").get(id));
+  const leerTodas = () => pedir(tx("meta").objectStore("meta").getAll());
+
+  // ---------- estado ----------
+  let canciones = [];       // todas, ordenadas
+  let visibles = [];        // filtradas por búsqueda
+  let actual = null;        // id sonando
+  let urlActual = null;
+  let aleatorio = false, repetir = false;
+  let historial = [];
+
+  const guardarPref = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const leerPref = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
+
+  // ---------- interfaz ----------
+  function avisar(texto) {
+    const a = $("aviso");
+    a.textContent = texto;
+    a.classList.add("visible");
+    clearTimeout(avisar.t);
+    avisar.t = setTimeout(() => a.classList.remove("visible"), 1800);
+  }
+  const fmt = s => !isFinite(s) ? "0:00" : `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+  function pintarLista() {
+    const q = $("buscar").value.trim().toLowerCase();
+    visibles = q ? canciones.filter(c => (c.titulo + " " + c.artista).toLowerCase().includes(q)) : canciones;
+    const ul = $("lista");
+    ul.textContent = "";
+    const frag = document.createDocumentFragment();
+    for (const c of visibles) {
+      const li = document.createElement("li");
+      li.className = "cancion" + (c.id === actual ? " sonando" : "");
+      li.dataset.id = c.id;
+      li.innerHTML = '<span class="punto"></span><div class="info"><div class="titulo"></div><div class="artista"></div></div>';
+      li.querySelector(".titulo").textContent = c.titulo;
+      li.querySelector(".artista").textContent = c.artista || " ";
+      frag.appendChild(li);
+    }
+    ul.appendChild(frag);
+    $("vacio").style.display = canciones.length ? "none" : "grid";
+  }
+
+  async function recargar() {
+    canciones = (await leerTodas()).sort((a, b) =>
+      (a.artista + a.titulo).localeCompare(b.artista + b.titulo, "es", { sensitivity: "base" }));
+    pintarLista();
+  }
+
+  // ---------- reproducción ----------
+  async function reproducir(id, empezar = true) {
+    const c = canciones.find(x => x.id === id);
+    if (!c) return;
+    const archivo = await leerArchivo(id);
+    if (!archivo) { avisar("no encontré el archivo"); return; }
+    if (urlActual) URL.revokeObjectURL(urlActual);
+    urlActual = URL.createObjectURL(archivo);
+    audio.src = urlActual;
+    if (actual !== null && actual !== id) historial.push(actual);
+    actual = id;
+    guardarPref("ultima", id);
+
+    $("ahoraTitulo").textContent = c.titulo;
+    $("ahoraArtista").textContent = c.artista;
+    $("reproductor").classList.remove("oculto");
+    document.querySelectorAll(".cancion.sonando").forEach(e => e.classList.remove("sonando"));
+    const fila = document.querySelector(`.cancion[data-id="${id}"]`);
+    if (fila) fila.classList.add("sonando");
+
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: c.titulo, artist: c.artista, album: "ikrack",
+        artwork: [{ src: "icon-512.png", sizes: "512x512", type: "image/png" }],
+      });
+    }
+    if (empezar) {
+      try { await audio.play(); } catch (e) {}
+    }
+  }
+
+  function cola() { return visibles.length ? visibles : canciones; }
+
+  function siguiente(automatico = false) {
+    const lista = cola();
+    if (!lista.length) return;
+    if (automatico && repetir && actual !== null) { audio.currentTime = 0; audio.play(); return; }
+    let i = lista.findIndex(c => c.id === actual);
+    if (aleatorio && lista.length > 1) {
+      let j; do { j = Math.floor(Math.random() * lista.length); } while (j === i);
+      i = j;
+    } else {
+      i = (i + 1) % lista.length;
+    }
+    reproducir(lista[i].id);
+  }
+
+  function anterior() {
+    if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+    const lista = cola();
+    if (!lista.length) return;
+    if (aleatorio && historial.length) { const id = historial.pop(); actual = null; reproducir(id); return; }
+    let i = lista.findIndex(c => c.id === actual);
+    i = (i - 1 + lista.length) % lista.length;
+    reproducir(lista[i].id);
+  }
+
+  function alternar() {
+    if (actual === null) { if (cola().length) reproducir(cola()[0].id); return; }
+    audio.paused ? audio.play() : audio.pause();
+  }
+
+  function pintarPlay() {
+    const pausado = audio.paused;
+    $("icoPlay").style.display = pausado ? "" : "none";
+    $("icoPausa").style.display = pausado ? "none" : "";
+    if ("mediaSession" in navigator) navigator.mediaSession.playbackState = pausado ? "paused" : "playing";
+  }
+
+  let arrastrando = false;
+  function pintarProgreso() {
+    const d = audio.duration, t = audio.currentTime;
+    if (!arrastrando && isFinite(d) && d > 0) {
+      const v = Math.round(t / d * 1000);
+      $("barra").value = v;
+      $("barra").style.setProperty("--p", v / 10 + "%");
+    }
+    $("tActual").textContent = fmt(t);
+    $("tTotal").textContent = fmt(d);
+    if ("mediaSession" in navigator && navigator.mediaSession.setPositionState && isFinite(d) && d > 0) {
+      try { navigator.mediaSession.setPositionState({ duration: d, position: Math.min(t, d), playbackRate: 1 }); } catch (e) {}
+    }
+  }
+
+  audio.addEventListener("play", pintarPlay);
+  audio.addEventListener("pause", pintarPlay);
+  audio.addEventListener("timeupdate", pintarProgreso);
+  audio.addEventListener("loadedmetadata", pintarProgreso);
+  audio.addEventListener("ended", () => siguiente(true));
+
+  const barra = $("barra");
+  barra.addEventListener("input", () => {
+    arrastrando = true;
+    barra.style.setProperty("--p", barra.value / 10 + "%");
+    if (isFinite(audio.duration)) $("tActual").textContent = fmt(barra.value / 1000 * audio.duration);
+  });
+  barra.addEventListener("change", () => {
+    if (isFinite(audio.duration)) audio.currentTime = barra.value / 1000 * audio.duration;
+    arrastrando = false;
+  });
+
+  if ("mediaSession" in navigator) {
+    const ms = navigator.mediaSession;
+    const h = (a, f) => { try { ms.setActionHandler(a, f); } catch (e) {} };
+    h("play", () => audio.play());
+    h("pause", () => audio.pause());
+    h("previoustrack", anterior);
+    h("nexttrack", () => siguiente());
+    h("seekto", d => { audio.currentTime = d.seekTime; });
+  }
+
+  // ---------- botones ----------
+  $("btnPlay").onclick = alternar;
+  $("btnSiguiente").onclick = () => siguiente();
+  $("btnAnterior").onclick = anterior;
+  $("btnAleatorio").onclick = () => {
+    aleatorio = !aleatorio; guardarPref("aleatorio", aleatorio);
+    $("btnAleatorio").classList.toggle("activo", aleatorio);
+  };
+  $("btnRepetir").onclick = () => {
+    repetir = !repetir; guardarPref("repetir", repetir);
+    $("btnRepetir").classList.toggle("activo", repetir);
+  };
+  $("buscar").addEventListener("input", pintarLista);
+
+  // tocar para reproducir, mantener presionado para borrar
+  let presion = null, borrando = false;
+  const lista = $("lista");
+  lista.addEventListener("pointerdown", e => {
+    const fila = e.target.closest(".cancion");
+    if (!fila) return;
+    borrando = false;
+    presion = setTimeout(async () => {
+      borrando = true;
+      const id = Number(fila.dataset.id);
+      const c = canciones.find(x => x.id === id);
+      if (c && confirm(`¿borrar "${c.titulo}"?`)) {
+        if (id === actual) { audio.pause(); audio.removeAttribute("src"); actual = null; $("reproductor").classList.add("oculto"); }
+        await borrarCancion(id);
+        await recargar();
+        avisar("borrada");
+      }
+    }, 600);
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+    lista.addEventListener(ev, () => clearTimeout(presion)));
+  lista.addEventListener("scroll", () => clearTimeout(presion), { passive: true });
+  window.addEventListener("scroll", () => clearTimeout(presion), { passive: true });
+  lista.addEventListener("click", e => {
+    if (borrando) { borrando = false; return; }
+    const fila = e.target.closest(".cancion");
+    if (fila) reproducir(Number(fila.dataset.id));
+  });
+  lista.addEventListener("contextmenu", e => e.preventDefault());
+
+  // importar
+  $("btnAgregar").onclick = () => $("archivos").click();
+  $("archivos").addEventListener("change", async e => {
+    const archivos = [...e.target.files];
+    e.target.value = "";
+    if (!archivos.length) return;
+    const existentes = new Set(canciones.map(c => (c.artista + " - " + c.titulo).toLowerCase()));
+    let n = 0, repetidas = 0;
+    for (const a of archivos) {
+      const base = a.name.replace(/\.[^.]+$/, "").trim().toLowerCase();
+      const clave = base.includes(" - ") ? base : " - " + base;
+      if (existentes.has(clave)) { repetidas++; continue; }
+      avisar(`importando ${++n}/${archivos.length}`);
+      try { await guardarCancion(a); existentes.add(clave); }
+      catch (err) { avisar("no hay espacio suficiente"); break; }
+    }
+    await recargar();
+    avisar(repetidas ? `${n} nuevas · ${repetidas} ya estaban` : `${n} importadas`);
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  });
+
+  // ---------- inicio ----------
+  (async () => {
+    db = await abrirDB();
+    aleatorio = leerPref("aleatorio", false);
+    repetir = leerPref("repetir", false);
+    $("btnAleatorio").classList.toggle("activo", aleatorio);
+    $("btnRepetir").classList.toggle("activo", repetir);
+    await recargar();
+    const ultima = leerPref("ultima", null);
+    if (ultima !== null && canciones.some(c => c.id === ultima)) reproducir(ultima, false);
+  })();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
