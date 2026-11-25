@@ -63,6 +63,16 @@
   #mkp-{{ section.id }} .mkp-rev input,#mkp-{{ section.id }} .mkp-rev textarea{background:rgba(0,0,0,.35) !important;border:1px solid var(--mk-line-2) !important;color:#fff !important;border-radius:14px !important}
   #mkp-{{ section.id }} .mkp-rev .jdgm-form label,#mkp-{{ section.id }} .mkp-rev .jdgm-form__title{color:#fff !important}
   #mkp-{{ section.id }} .mkp-rev a{color:var(--mk-sage)}
+  /* Judge.me new widget (jm- / jdgm-tab classes) */
+  #mkp-{{ section.id }} .mkp-rev *:not(svg):not(path):not(img){color:var(--mk-text) !important;border-color:var(--mk-line) !important;font-family:var(--mk-f-text)}
+  #mkp-{{ section.id }} .mkp-rev [class*="title"],#mkp-{{ section.id }} .mkp-rev h2,#mkp-{{ section.id }} .mkp-rev h3{color:#fff !important;font-family:var(--mk-f-title) !important;font-weight:500 !important;letter-spacing:-.02em}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-tab,#mkp-{{ section.id }} .mkp-rev .jdgm-tab *{color:var(--mk-soft) !important;background:transparent !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-tab--active,#mkp-{{ section.id }} .mkp-rev .jdgm-tab--active *{color:#fff !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-tab--active{box-shadow:inset 0 -2px 0 var(--mk-sage) !important}
+  #mkp-{{ section.id }} .mkp-rev .jm-button,#mkp-{{ section.id }} .mkp-rev .jm-button *{border-radius:999px !important}
+  #mkp-{{ section.id }} .mkp-rev .jm-button--primary,#mkp-{{ section.id }} .mkp-rev .jm-button--primary *{background:var(--mk-sage) !important;color:#000 !important;border-color:var(--mk-sage) !important;font-weight:600 !important}
+  #mkp-{{ section.id }} .mkp-rev .jm-button--primary{min-height:48px;padding:0 26px !important}
+  #mkp-{{ section.id }} .mkp-rev [class*="star"]:not(svg),#mkp-{{ section.id }} .mkp-rev [class*="star"] svg{color:var(--mk-sage) !important;fill:var(--mk-sage)}
   /* more products */
   #mkp-{{ section.id }} .mkp-more{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
   #mkp-{{ section.id }} .mkp-card{display:flex;flex-direction:column;gap:12px;padding:12px 12px 18px;border-radius:var(--mk-r-lg);transition:background-color 200ms ease}
