@@ -63,7 +63,8 @@
         <h2 class="mk-h2" id="mkc-paq-{{ section.id }}">Paquetes</h2>
       </div>
       <div class="mkc-paqs">
-        {%- for x in collections.all.products -%}
+        {%- assign por_precio = collections.all.products | sort: 'price' -%}
+        {%- for x in por_precio -%}
           {%- if x.tags contains 'paquete' -%}
             {%- assign items = x.description | split: '<li>' -%}
             <a class="mkc-paq mk-glass" href="{{ x.url }}">
