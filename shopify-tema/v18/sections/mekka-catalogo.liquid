@@ -98,8 +98,25 @@
         <h2 class="mk-h2" id="mkc-prod-{{ section.id }}">Productos</h2>
       </div>
       <div class="mkc-grid">
-        {%- for x in collections.all.products -%}
-          {%- unless x.tags contains 'paquete' or x.handle == 'software-mekka-lanzamiento' -%}
+        {%- liquid
+          assign orden = section.settings.orden | split: ','
+          assign lista = ''
+          for h in orden
+            assign hs = h | strip
+            if all_products[hs] != blank
+              assign lista = lista | append: hs | append: ','
+            endif
+          endfor
+          for x in collections.all.products
+            unless lista contains x.handle
+              assign lista = lista | append: x.handle | append: ','
+            endunless
+          endfor
+          assign lista = lista | split: ','
+        -%}
+        {%- for hh in lista -%}
+          {%- assign x = all_products[hh] -%}
+          {%- unless x == blank or x.tags contains 'paquete' or x.handle == 'software-mekka-lanzamiento' -%}
             <a class="mkc-card mk-glass" href="{{ x.url }}">
               <figure{% if x.featured_media.preview_image.src contains '.jp' %} class="is-foto"{% endif %}>{%- if x.featured_media -%}{{ x.featured_media | image_url: width: 600 | image_tag: loading: 'lazy', sizes: '(max-width: 980px) 50vw, 25vw', alt: x.title }}{%- endif -%}</figure>
               <h3>{{ x.title }}</h3>
@@ -133,6 +150,7 @@
   "settings": [
     { "type": "text", "id": "title", "label": "Título", "default": "Productos" },
     { "type": "textarea", "id": "intro", "label": "Texto", "default": "Elige un paquete listo para tu entrada o compra cada pieza por separado. Todo funciona con Mekka, sin mensualidades." },
+    { "type": "textarea", "id": "orden", "label": "Orden de productos (handles separados por coma)", "default": "software-mekka-fitness-control,lector-de-reconocimiento-facial,torniquete-chico,torniquete-de-acceso,lector-de-huella,instalacion-en-sitio-cdmx-y-edomex,computadora-reacondicionada-con-2-monitores,cajon-de-dinero-automatico" },
     { "type": "text", "id": "whatsapp", "label": "WhatsApp", "default": "525533416240" }
   ]
 }
