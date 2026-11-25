@@ -1,0 +1,21 @@
+{
+  "sections": {
+    "main": {
+      "type": "mekka-landing",
+      "settings": {
+        "producto": "paquete-sencillo",
+        "incluye": [
+          "torniquete-chico",
+          "lector-de-reconocimiento-facial",
+          "soporte-para-lector-facial",
+          "software-mekka-fitness-control"
+        ],
+        "poster": "shopify://shop_images/instalacion-mekka-poster.jpg",
+        "wa_msg": "Hola, buena tarde. Quiero información sobre el paquete sencillo."
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
