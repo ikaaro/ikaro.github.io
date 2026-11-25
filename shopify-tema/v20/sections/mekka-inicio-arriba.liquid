@@ -1,0 +1,820 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+/* ===== Mekka · tokens from the Manual de Marca v1.1 ===== */
+:root{
+  --mk-black:#000000; --mk-bg:#050505; --mk-surface:#0E0E0E; --mk-raised:#1A1A1A;
+  --mk-sage:#9AA58A; --mk-sage-dim:rgba(154,165,138,.16);
+  --mk-champ:#D9C6A3; --mk-terra:#B8826A;
+  --mk-white:#FFFFFF; --mk-text:#EDEDE8; --mk-muted:#A6A6A0; --mk-soft:#7E7E78;
+  --mk-line:rgba(255,255,255,.10); --mk-line-2:rgba(255,255,255,.20);
+  --mk-row:rgba(255,255,255,.05); --mk-bad:#D98C6E;
+  --mk-mp:#FFE600;
+  --mk-r-xl:44px; --mk-r-lg:28px; --mk-r-md:22px; --mk-r-sm:14px;
+  --mk-m:clamp(16px,3.4vw,40px);
+  --mk-max:1360px;
+  --mk-gap:clamp(96px,11vw,168px);
+  --mk-ease:cubic-bezier(.23,1,.32,1);
+  --mk-f-title:'Space Grotesk',system-ui,sans-serif;
+  --mk-f-text:'Manrope',system-ui,sans-serif;
+  --mk-f-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --mk-t-hero:clamp(42px,5.3vw,80px);
+  --mk-t-h2:clamp(34px,4.2vw,56px);
+  --mk-t-lead:clamp(17px,1.5vw,20px);
+}
+body{background:var(--mk-bg)}
+.shopify-section-group-header-group,.shopify-section-group-footer-group{display:none !important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* ambient colour behind the glass: sage and champagne blurred on near-black (manual p.14) */
+.mk-amb{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:var(--mk-bg)}
+.mk-amb i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55}
+.mk-amb i:nth-child(1){left:-12vw;top:-14vw;width:52vw;height:46vw;background:#7F8C6E}
+.mk-amb i:nth-child(2){right:-14vw;bottom:-18vw;width:46vw;height:40vw;background:#8A7A5E;opacity:.4}
+.mk-amb i:nth-child(3){left:30vw;bottom:-26vw;width:34vw;height:28vw;background:#6E4A3A;opacity:.28}
+
+.mk{font-family:var(--mk-f-text);color:var(--mk-text);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+.mk *,.mk *::before,.mk *::after{box-sizing:border-box}
+.mk h1,.mk h2,.mk h3,.mk p,.mk ul,.mk ol,.mk li,.mk figure,.mk dl,.mk dd{margin:0;padding:0;font-family:inherit;text-transform:none;letter-spacing:normal}
+.mk ul,.mk ol{list-style:none}
+.mk a{color:inherit;text-decoration:none}
+.mk button{font-family:inherit}
+.mk :focus-visible{outline:2px solid var(--mk-sage);outline-offset:3px}
+.mk svg.mk-i{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mk-wrap{max-width:var(--mk-max);margin:0 auto;padding:0 var(--mk-m)}
+.mk-num{font-variant-numeric:tabular-nums}
+
+/* liquid glass (manual p.14): white 4-15% over black 40%, blur 34, saturation 170, 1px white border, top highlight */
+.mk-glass{background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.04) 60%),rgba(0,0,0,.40);border:1px solid rgba(255,255,255,.14);border-radius:var(--mk-r-lg);-webkit-backdrop-filter:blur(34px) saturate(170%);backdrop-filter:blur(34px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.mk-solid{background:var(--mk-surface);border:1px solid var(--mk-raised);border-radius:var(--mk-r-md)}
+.mk-label{font-family:var(--mk-f-mono);font-size:12px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--mk-soft)}
+
+/* type */
+.mk-h2{font-family:var(--mk-f-title);font-size:var(--mk-t-h2);line-height:1.08;font-weight:500;letter-spacing:-.02em;color:var(--mk-white);text-wrap:balance}
+.mk-h2 em{font-style:normal;color:var(--mk-sage)}
+.mk-lead{font-size:var(--mk-t-lead);line-height:1.6;color:var(--mk-muted);max-width:54ch;text-wrap:pretty}
+.mk-head{display:flex;flex-direction:column;gap:16px;margin-bottom:56px;max-width:780px}
+
+/* buttons: sage pill with black text, glass pill (manual p.12, p.21) */
+.mk .mk-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;border:0;font:600 15px/1 var(--mk-f-text);cursor:pointer;white-space:nowrap;
+  background:var(--mk-sage);color:#000;transition:transform 160ms var(--mk-ease),background-color 200ms ease,box-shadow 200ms ease;user-select:none;-webkit-user-select:none}
+.mk .mk-btn:active{transform:scale(.97)}
+.mk .mk-btn--glass{background:rgba(255,255,255,.06);color:var(--mk-white);box-shadow:inset 0 0 0 1px var(--mk-line-2)}
+.mk .mk-btn--sm{min-height:44px;padding:0 20px;font-size:14px}
+.mk .mk-btn svg.mk-i{width:18px;height:18px;transition:transform 200ms var(--mk-ease)}
+@media (hover:hover) and (pointer:fine){
+  .mk .mk-btn:hover{background:#A9B399}
+  .mk .mk-btn--glass:hover{background:rgba(255,255,255,.12)}
+  .mk .mk-btn:hover svg.mk-i{transform:translateX(3px)}
+}
+
+/* the mascot, built from the construction sheet (manual p.6) */
+.mk-masc{display:block;flex:0 0 auto}
+.mk-masc .b{fill:var(--mk-sage)}
+.mk-masc .e{fill:none;stroke:#000;stroke-width:7.3;stroke-linecap:round;stroke-linejoin:round;transition:d 220ms var(--mk-ease)}
+
+/* entrances */
+@media (prefers-reduced-motion:no-preference){
+  .js .mk [data-rise]{opacity:0;transform:translateY(18px);transition:opacity 600ms var(--mk-ease),transform 700ms var(--mk-ease);transition-delay:calc(var(--d,0) * 60ms)}
+  .js .mk [data-rise].is-in{opacity:1;transform:none}
+}
+
+/* ===== top bar ===== */
+.mk-top{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px;padding:8px 8px 8px 18px;border-radius:999px}
+.mk-logo{display:inline-flex;align-items:center;gap:12px;min-height:44px}
+.mk-logo img{display:block;height:20px;width:auto}
+.mk-top__nav{display:flex;align-items:center;gap:2px}
+.mk-top__nav a{display:flex;align-items:center;min-height:40px;padding:0 16px;border-radius:999px;font-size:14px;font-weight:500;color:var(--mk-muted);transition:color 200ms ease,background-color 200ms ease}
+@media (hover:hover) and (pointer:fine){.mk-top__nav a:hover{color:var(--mk-white);background:rgba(255,255,255,.07)}}
+@media (max-width:980px){.mk-top__nav{display:none}}
+/* mobile menu */
+.mk-top__end{display:flex;align-items:center;gap:8px}
+.mk-menu{display:none;position:relative}
+.mk-menu summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;box-shadow:inset 0 0 0 1px var(--mk-line-2);-webkit-user-select:none;user-select:none}
+.mk-menu summary::-webkit-details-marker{display:none}
+.mk-menu summary svg.mk-i{width:18px;height:18px;transition:transform 200ms var(--mk-ease)}
+.mk-menu[open] summary{background:var(--mk-sage);color:#000;box-shadow:none}
+.mk-menu[open] summary svg.mk-i{transform:rotate(180deg)}
+.mk-menu nav{position:absolute;right:0;top:calc(100% + 12px);z-index:30;width:min(260px,calc(100vw - 32px));padding:8px;border-radius:22px;display:flex;flex-direction:column;background:#0E0E0E;border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.mk-menu nav a{display:flex;align-items:center;min-height:48px;padding:0 14px;border-radius:14px;color:var(--mk-text);font-size:15px;font-weight:500}
+.mk-menu nav a:active{background:rgba(255,255,255,.08)}
+.mk-menu nav a.is-cta{margin-top:6px;justify-content:center;background:var(--mk-sage);color:#000;font-weight:700}
+@media (max-width:980px){.mk-menu{display:block}}
+@media (max-width:520px){.mk-top__end > .mk-btn{display:none}}
+
+
+/* ===== hero ===== */
+.mk-hero{position:relative;padding-bottom:clamp(40px,5vw,80px)}
+.mk-hero__grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;align-items:center;padding-top:clamp(48px,6vw,96px)}
+.mk-hero__copy{grid-column:1 / span 6;display:flex;flex-direction:column;align-items:flex-start;gap:26px}
+.mk-hero h1{font-family:var(--mk-f-title);font-size:var(--mk-t-hero);line-height:1;font-weight:500;letter-spacing:-.03em;color:var(--mk-white)}
+.mk-hero h1 span{display:block;white-space:nowrap}
+.mk-hero h1 span + span{color:var(--mk-sage)}
+.mk-hero__copy > p{font-size:var(--mk-t-lead);line-height:1.6;color:var(--mk-muted);max-width:46ch}
+.mk-hero__copy > p b{color:var(--mk-white);font-weight:600}
+.mk-hero__acts{display:flex;flex-wrap:wrap;gap:12px}
+.mk-stats{display:flex;flex-wrap:wrap;gap:12px 36px;padding-top:6px}
+.mk-stats div{display:flex;flex-direction:column;gap:4px}
+.mk-stats b{font-family:var(--mk-f-title);font-size:30px;line-height:1;font-weight:500;color:var(--mk-white);letter-spacing:-.02em}
+.mk-hero__stage{grid-column:7 / span 6}
+@media (prefers-reduced-motion:no-preference){
+  .js .mk-hero [data-in]{opacity:0;transform:translateY(16px);animation:mkIn 700ms var(--mk-ease) forwards;animation-delay:calc(var(--d,0) * 70ms + 80ms)}
+}
+@keyframes mkIn{to{opacity:1;transform:none}}
+@media (max-width:980px){
+  .mk-hero__grid{display:flex;flex-direction:column;align-items:stretch;gap:22px;padding-top:36px}
+  .mk-hero__copy{display:contents}
+  .mk-hero__copy > .mk-label{order:1}
+  .mk-hero h1{order:2}
+  .mk-hero__stage{order:3}
+  .mk-hero__copy > p{order:4}
+  .mk-hero__acts{order:5}
+  .mk-stats{order:6}
+}
+@media (max-width:560px){.mk-hero__acts .mk-btn{flex:1 1 auto}.mk-stats b{font-size:24px}}
+
+/* ===== the access scene ===== */
+.mk-scene{position:relative;border-radius:var(--mk-r-xl);padding:18px;overflow:hidden}
+.mk-scene svg.mk-art{display:block;width:100%;height:auto}
+.mk-scene__cap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px 2px}
+.mk-scene__cap span:last-child{color:var(--mk-sage)}
+.mk-scene .mk-scr--card{display:none}
+@media (max-width:640px){
+  .mk-scene{padding:12px;border-radius:var(--mk-r-lg)}
+  .mk-scene .mk-scr--card{display:flex;height:auto;margin-top:10px;border-radius:var(--mk-r-md);border:1px solid var(--mk-raised)}
+  .mk-scene .mk-scene__cap{display:none}
+}
+.mk-scr{width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:12px 14px 10px;font-family:var(--mk-f-text);color:#EDEDE8;background:#000}
+.mk-scr__top{display:flex;align-items:center;justify-content:space-between}
+.mk-scr__top b{font-family:var(--mk-f-mono);font-size:12px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:#8a8a84}
+.mk-scr__top span{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mk-sage)}
+.mk-scr__top span::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.mk-scr__card{flex:1;min-height:0;display:flex;align-items:center;gap:14px;padding:12px;border-radius:16px;background:var(--mk-surface);border:1px solid var(--mk-raised);transition:border-color 220ms ease,background-color 220ms ease}
+.mk-scr__who{min-width:0;display:flex;flex-direction:column;gap:3px}
+.mk-scr__who b{font-family:var(--mk-f-title);font-size:18px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk-scr__who small{font-size:13px;color:#9a9a94;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk-scr__pill{align-self:flex-start;white-space:nowrap;margin-top:4px;display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(255,255,255,.08);color:#cfcfc8}
+.mk-scr__pill svg.mk-i{width:14px;height:14px}
+.mk-scr__foot{display:flex;justify-content:space-between;font-family:var(--mk-f-mono);font-size:12px;letter-spacing:.06em;color:#8a8a84}
+.mk-scr__foot b{color:#fff;font-weight:500}
+.mk-scr[data-state="ok"] .mk-scr__card{border-color:rgba(154,165,138,.6);background:rgba(154,165,138,.10)}
+.mk-scr[data-state="ok"] .mk-scr__pill{background:var(--mk-sage);color:#000}
+.mk-scr[data-state="no"] .mk-scr__card{border-color:rgba(184,130,106,.6);background:rgba(184,130,106,.10)}
+.mk-scr[data-state="no"] .mk-scr__pill{background:var(--mk-terra);color:#000}
+.mk-scr__swap{transition:opacity 180ms ease,filter 180ms ease}
+.mk-scr.is-swapping .mk-scr__swap{opacity:0;filter:blur(3px)}
+#mkLed,#mkBar{transition:fill 200ms ease}
+#mkScan,#mkHalo{transform-box:fill-box;transform-origin:center}
+
+/* ===== the reception photo ===== */
+.mk-sec{padding-top:var(--mk-gap)}
+.mk-photo{position:relative;border-radius:var(--mk-r-xl);overflow:hidden;aspect-ratio:16 / 8;background:#0a0a0a}
+.mk-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.04);transition:transform 1400ms var(--mk-ease)}
+.mk-photo.is-in img{transform:none}
+.mk-photo__card{position:absolute;left:clamp(14px,3vw,36px);bottom:clamp(14px,3vw,36px);max-width:420px;padding:22px 24px;border-radius:var(--mk-r-md);display:flex;flex-direction:column;gap:10px}
+.mk-photo__card h2{font-family:var(--mk-f-title);font-size:clamp(24px,2.4vw,32px);line-height:1.15;font-weight:500;color:#fff;letter-spacing:-.01em}
+.mk-photo__card p{font-size:15px;color:var(--mk-muted)}
+.mk-photo__note{position:absolute;right:clamp(14px,3vw,36px);top:clamp(14px,3vw,30px);font-family:var(--mk-f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+@media (max-width:760px){
+  .mk-photo{aspect-ratio:4 / 5;border-radius:var(--mk-r-lg)}
+  .mk-photo img{object-position:50% 50%}
+  .mk-photo__card{right:14px;max-width:none}
+}
+
+/* ===== the dashboard, as on manual p.21 ===== */
+.mk-app{position:relative;display:grid;grid-template-columns:200px minmax(0,1fr);gap:12px;padding:12px;border-radius:var(--mk-r-lg);font-size:14px}
+.mk-app__side{padding:16px 12px;border-radius:var(--mk-r-md);display:flex;flex-direction:column;gap:2px}
+.mk-app__side .mk-logo{min-height:36px;margin:0 6px 18px}
+.mk-app__side .mk-logo img{height:14px}
+.mk-app__side .mk-label{font-size:12px;padding:0 10px 8px}
+.mk-app__side span{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;color:var(--mk-muted);font-size:14px}
+.mk-app__side span svg.mk-i{width:16px;height:16px}
+.mk-app__side span.is-on{background:var(--mk-sage);color:#000;font-weight:600}
+.mk-app__main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.mk-app__bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:var(--mk-r-md)}
+.mk-app__bar b{display:block;font-family:var(--mk-f-title);font-size:20px;font-weight:500;color:#fff}
+.mk-app__bar small{font-size:13px;color:var(--mk-soft)}
+.mk-sample{font-family:var(--mk-f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mk-sage);padding:4px 10px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(154,165,138,.5);white-space:nowrap}
+.mk-av{width:34px;height:34px;flex:0 0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--mk-champ);color:#000;font-family:var(--mk-f-mono);font-size:12px;font-weight:500}
+.mk-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.mk-kpi{padding:14px 16px;border-radius:var(--mk-r-md);display:flex;flex-direction:column;gap:6px}
+.mk-kpi dt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mk-muted)}
+.mk-kpi dt svg.mk-i{width:16px;height:16px;padding:6px;box-sizing:content-box;border-radius:10px;background:rgba(255,255,255,.07)}
+.mk-kpi dd{font-family:var(--mk-f-title);font-size:clamp(26px,2.6vw,38px);line-height:1;font-weight:500;color:#fff;letter-spacing:-.01em}
+.mk-kpi small{font-size:13px;color:var(--mk-soft)}
+.mk-app__cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,1fr);gap:12px}
+.mk-panel{padding:16px;border-radius:var(--mk-r-md);display:flex;flex-direction:column;gap:12px;min-width:0}
+.mk-panel__top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mk-panel__top b{display:flex;align-items:center;gap:8px;font-family:var(--mk-f-title);font-size:16px;font-weight:500;color:#fff}
+.mk-panel__top b svg.mk-i{width:16px;height:16px}
+.mk-panel__top small{font-size:13px;color:var(--mk-soft)}
+.mk-list{display:flex;flex-direction:column}
+.mk-li{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:8px 0;font-size:14px;color:var(--mk-text)}
+.mk-li + .mk-li{border-top:1px solid rgba(255,255,255,.06)}
+.mk-li time{font-family:var(--mk-f-mono);font-size:12px;color:var(--mk-soft)}
+.mk-streak{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--mk-champ);white-space:nowrap}
+.mk-streak svg.mk-i{width:14px;height:14px}
+.mk-week{flex:1;display:flex;align-items:flex-end;gap:8px;min-height:180px}
+.mk-week i{flex:1;border-radius:10px 10px 6px 6px;background:var(--mk-sage);height:calc(var(--v) * 1%);transform-origin:bottom}
+.mk-week i.is-low{background:rgba(255,255,255,.12)}
+.mk-days{display:flex;gap:8px;font-family:var(--mk-f-mono);font-size:12px;color:var(--mk-soft)}
+.mk-days span{flex:1;text-align:center}
+.mk-panel__foot{display:flex;justify-content:space-between;font-size:13px;color:var(--mk-soft)}
+@media (prefers-reduced-motion:no-preference){
+  .js .mk-week i{transform:scaleY(0);transition:transform 900ms var(--mk-ease);transition-delay:calc(var(--n) * 60ms)}
+  .js .mk-app.is-in .mk-week i{transform:none}
+}
+.mk-bot{display:flex;gap:12px;align-items:center;padding:14px;border-radius:18px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10)}
+.mk-bot b{display:block;font-family:var(--mk-f-title);font-size:17px;font-weight:500;color:#fff}
+.mk-bot small{display:block;font-size:13px;color:var(--mk-muted);line-height:1.45}
+.mk-bot__acts{display:flex;flex-wrap:wrap;gap:8px}
+.mk-chipbtn{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:600;background:var(--mk-sage);color:#000}
+.mk-chipbtn--ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px var(--mk-line-2)}
+.mk-chipbtn svg.mk-i{width:14px;height:14px}
+.mk-minis{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mk-minis div{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05)}
+.mk-minis b{display:block;font-family:var(--mk-f-title);font-size:20px;font-weight:500;color:#fff}
+.mk-minis small{font-size:13px;color:var(--mk-soft)}
+@media (max-width:1180px){.mk-app{grid-template-columns:1fr}.mk-app__side{display:none}.mk-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.mk-kpis .mk-kpi:nth-child(n+4){display:none}}
+@media (max-width:980px){.mk-app__cols{grid-template-columns:1fr 1fr}.mk-app__cols .mk-panel:last-child{grid-column:1 / -1}}
+@media (max-width:640px){
+  .mk-app{padding:8px;border-radius:var(--mk-r-md)}
+  .mk-app__cols{grid-template-columns:1fr}
+  .mk-kpis{grid-template-columns:1fr 1fr}.mk-kpis .mk-kpi:nth-child(3){display:none}
+  .mk-app__bar .mk-sample{display:none}
+  .mk-week{min-height:130px}
+}
+
+/* ===== what it does ===== */
+.mk-bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.mk-tile{display:flex;flex-direction:column;gap:18px;padding:28px;border-radius:var(--mk-r-lg);min-width:0}
+.mk-hexi{width:48px;height:42px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#000;background:var(--mk-sage);clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);border-radius:6px}
+.mk-hexi svg.mk-i{width:20px;height:20px}
+.mk-tile h3{font-family:var(--mk-f-title);font-size:22px;line-height:1.2;font-weight:500;color:#fff;letter-spacing:-.01em}
+.mk-tile p{font-size:15px;line-height:1.6;color:var(--mk-muted);max-width:44ch}
+.mk-tile__ui{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.mk-t-7{grid-column:span 7}.mk-t-5{grid-column:span 5}.mk-t-4{grid-column:span 4}
+.mk-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:var(--mk-r-sm);background:var(--mk-surface);border:1px solid var(--mk-raised);font-size:14px;color:var(--mk-text)}
+.mk-row > span{display:flex;align-items:center;gap:10px;min-width:0}
+.mk-row b{font-weight:600;color:#fff}
+.mk-row small{display:block;font-size:13px;color:var(--mk-soft)}
+.mk-tag{display:inline-flex;align-items:center;min-height:22px;padding:0 9px;border-radius:999px;font-family:var(--mk-f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--mk-sage-dim);color:var(--mk-sage);white-space:nowrap}
+.mk-tag.is-terra{background:rgba(184,130,106,.16);color:var(--mk-terra)}
+.mk-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mk-plan{padding:14px;border-radius:var(--mk-r-sm);background:var(--mk-surface);border:1px solid var(--mk-raised)}
+.mk-plan small{display:block;font-family:var(--mk-f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mk-soft)}
+.mk-plan b{display:block;margin-top:6px;font-family:var(--mk-f-title);font-size:22px;font-weight:500;color:#fff}
+.mk-plan.is-on{background:var(--mk-sage);border-color:var(--mk-sage)}
+.mk-plan.is-on small,.mk-plan.is-on b{color:#000}
+.mk-big{font-family:var(--mk-f-title);font-size:24px;font-weight:500;color:#fff}
+.mk-change{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:var(--mk-r-sm);background:var(--mk-sage-dim);border:1px solid rgba(154,165,138,.4);font-size:14px;color:var(--mk-text)}
+.mk-change strong{font-family:var(--mk-f-title);font-size:24px;font-weight:500;color:var(--mk-sage)}
+@media (max-width:980px){.mk-t-7,.mk-t-5{grid-column:span 12}.mk-t-4{grid-column:span 6}.mk-t-4:last-child{grid-column:span 12}}
+@media (max-width:640px){.mk-t-4{grid-column:span 12}.mk-tile{padding:22px}}
+
+/* ===== who it is for ===== */
+.mk-who{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;align-items:center;padding:clamp(28px,4vw,56px);border-radius:var(--mk-r-xl)}
+.mk-who__text{grid-column:1 / span 6;display:flex;flex-direction:column;gap:16px}
+.mk-who__chips{grid-column:8 / span 5;display:flex;flex-wrap:wrap;gap:10px}
+.mk-who__h span{white-space:nowrap}
+.mk-who__chips li{display:inline-flex;align-items:center;min-height:46px;padding:0 20px;border-radius:999px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--mk-line);font-size:16px;font-weight:500;color:#fff;transition:background-color 200ms ease,color 200ms ease}
+@media (hover:hover) and (pointer:fine){.mk-who__chips li:hover{background:var(--mk-sage);color:#000}}
+@media (max-width:980px){.mk-who__text,.mk-who__chips{grid-column:1 / -1}}
+@media (max-width:560px){.mk-who{padding:22px;border-radius:var(--mk-r-lg)}.mk-who__h{font-size:30px}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H5.5A1.5 1.5 0 0 1 4 19z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.7 2.6 3 5.2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .3 1.6 1 2.5 2 3 0-3 .5-5.5.5-8z"/></symbol>
+    <symbol id="i-cake" viewBox="0 0 24 24"><path d="M4 20h16M5 20v-6.5A1.5 1.5 0 0 1 6.5 12h11a1.5 1.5 0 0 1 1.5 1.5V20M5 15.5c1.2 1 2.3 1 3.5 0s2.3-1 3.5 0 2.3 1 3.5 0 2.3-1 3.5 0M12 12V8M12 5.5v-.5"/></symbol>
+    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></symbol>
+    <symbol id="i-one" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10.5 9l2-1.5V16.5"/></symbol>
+    <symbol id="i-idcard" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.7-2 3-2s2.4.6 3 2M14.5 10h3.5M14.5 13.5h3.5"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16v-5M12 16V7M17 16v-8"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 3.5V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="1.8"/><path d="M5 9h14M12 9v5l-3.5 6.5M12 14l3.5 6.5"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="3"/><path d="M9 5V3.5h6V5M9 13l2 2 4-4"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-wa" viewBox="0 0 24 24"><path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.5L3.5 20.5l1.4-4.2A8.5 8.5 0 1 1 20.5 11.6z"/><path d="M9.2 8.6c.2-.4.6-.5.9-.4l.8.3c.3.1.4.4.3.7l-.4.9c.5 1 1.3 1.8 2.3 2.3l.9-.4c.3-.1.6 0 .7.3l.3.8c.1.3 0 .7-.4.9-.8.4-1.8.4-2.7-.1a7 7 0 0 1-3-3c-.5-.9-.5-1.9-.1-2.7z"/></symbol>
+    <symbol id="i-finger" viewBox="0 0 24 24"><path d="M12 11v4M8.5 8.5A5 5 0 0 1 17 12v2M7 12v3a5 5 0 0 0 1 3M17 17a5 5 0 0 1-1 2.5M12 3a9 9 0 0 1 9 9v1M3 13v-1a9 9 0 0 1 4-7.5"/></symbol>
+    <symbol id="i-face" viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M9 10v1M15 10v1M9.5 15.5a3.5 3.5 0 0 0 5 0"/></symbol>
+    <symbol id="i-turn" viewBox="0 0 24 24"><rect x="4" y="3" width="6" height="18" rx="2"/><path d="M10 9h10M10 12h8M10 15h10"/></symbol>
+    <symbol id="i-pc" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M8 20h8M12 16v4"/></symbol>
+    <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z"/></symbol>
+    <symbol id="i-drawer" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="11" rx="2.5"/><path d="M3 14h18M10 17h4M7 9V5h10v4"/></symbol>
+    <symbol id="i-ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></symbol>
+    <!-- mascot body: flat-top hexagon, 100 x 76.9, rounded corners -->
+    <symbol id="m-body" viewBox="0 0 100 76.9"><polygon points="29.6,7.9 70.4,7.9 90.6,38.45 70.4,69 29.6,69 9.4,38.45" fill="#9AA58A" stroke="#9AA58A" stroke-width="15.8" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+{%- capture masc_wink -%}<svg class="mk-masc" viewBox="0 0 100 76.9" aria-hidden="true"><use href="#m-body"/><path class="e" d="M22.0 46.6 L30.95 37.6 L39.9 46.6"/><path class="e" data-eye d="M60.1 42.95 L69.05 42.95 L78.0 42.95"/></svg>{%- endcapture -%}
+
+<div class="mk-amb" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<div class="mk">
+  <section class="mk-hero mk-wrap" id="top" aria-labelledby="mk-h1">
+    <header class="mk-top mk-glass">
+      <a class="mk-logo" href="#top" aria-label="Mekka, inicio">
+        <span style="width:42px">{{ masc_wink }}</span>
+        <img src="{{ 'mekka-wordmark.png' | asset_url }}" alt="" width="117" height="20">
+      </a>
+      <nav class="mk-top__nav" aria-label="Principal">
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#precio">Precio</a>
+        <a href="{{ routes.all_products_collection_url }}">Productos</a>
+        <a href="#faq">Preguntas</a>
+        <a href="/pages/plantillas-gimnasio-excel">Plantillas gratis</a>
+        <a href="/blogs/gimnasios">Blog</a>
+      </nav>
+      <div class="mk-top__end">
+        <details class="mk-menu">
+          <summary>Menú <svg class="mk-i" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+          <nav aria-label="Menú">
+            <a href="#como-funciona">Cómo funciona</a>
+            <a href="#precio">Precio</a>
+        <a href="{{ routes.all_products_collection_url }}">Productos</a>
+            <a href="#faq">Preguntas</a>
+            <a href="/pages/plantillas-gimnasio-excel">Plantillas gratis</a>
+            <a href="/blogs/gimnasios">Blog</a>
+            <a class="is-cta" href="#paquete">Arma tu paquete</a>
+          </nav>
+        </details>
+        <a class="mk-btn mk-btn--sm" href="#paquete">Arma tu paquete</a>
+      </div>
+    </header>
+      <script>document.querySelectorAll('.mk-menu a').forEach(function(a){a.addEventListener('click',function(){a.closest('details').open=false;});});document.addEventListener('click',function(e){document.querySelectorAll('.mk-menu[open]').forEach(function(d){if(!d.contains(e.target))d.open=false;});});</script>
+
+    <div class="mk-hero__grid">
+      <div class="mk-hero__copy">
+        <span class="mk-label" data-in style="--d:0">Software y control de acceso para gimnasios</span>
+        <h1 id="mk-h1" data-in style="--d:1"><span>Un solo pago.</span><span>Yo me encargo.</span></h1>
+        <p data-in style="--d:2"><b>Mekka Fitness Control</b> conecta tu torniquete con tu recepción: solo entra quien está al corriente. Pagas la licencia una vez y del resto, nosotros: membresías, accesos y cobros, sin mensualidades.</p>
+        <div class="mk-hero__acts" data-in style="--d:3">
+          <a class="mk-btn" href="#paquete">Arma tu paquete <svg class="mk-i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="mk-btn mk-btn--glass" href="#precio">Ver el precio</a>
+        </div>
+        <dl class="mk-stats" data-in style="--d:4">
+          <div><dt class="mk-label">Pago único</dt><dd><b class="mk-num">$5,400</b></dd></div>
+          <div><dt class="mk-label">Socios</dt><dd><b>Ilimitados</b></dd></div>
+          <div><dt class="mk-label">Soporte</dt><dd><b>De por vida</b></dd></div>
+        </dl>
+      </div>
+
+      <figure class="mk-hero__stage" data-in style="--d:2">
+        <div class="mk-scene mk-glass" data-ui role="img" aria-label="Animación: un socio llega al torniquete, pone su huella, la computadora de recepción lo reconoce, la mascota de Mekka le guiña y el torniquete gira para dejarlo pasar. Si la membresía está vencida, el torniquete no gira.">
+          <svg class="mk-art" viewBox="0 0 640 470" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="mkCol" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7F817C"/><stop offset=".08" stop-color="#DCDDD8"/><stop offset=".25" stop-color="#C0C2BC"/><stop offset=".65" stop-color="#AFB1AB"/><stop offset=".92" stop-color="#CDCEC9"/><stop offset="1" stop-color="#777974"/></linearGradient>
+              <linearGradient id="mkColShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
+              <linearGradient id="mkCham" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F1ED"/><stop offset="1" stop-color="#CFD0CB"/></linearGradient>
+              <linearGradient id="mkBarrel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EEEEEA"/><stop offset=".5" stop-color="#A9ABA5"/><stop offset="1" stop-color="#5F615C"/></linearGradient>
+              <radialGradient id="mkCap" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#F4F4F0"/><stop offset=".55" stop-color="#B9BBB5"/><stop offset="1" stop-color="#6F716C"/></radialGradient>
+              <radialGradient id="mkFloor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#9AA58A" stop-opacity=".16"/><stop offset="1" stop-color="#9AA58A" stop-opacity="0"/></radialGradient>
+              <radialGradient id="mkGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#9AA58A" stop-opacity=".7"/><stop offset="1" stop-color="#9AA58A" stop-opacity="0"/></radialGradient>
+              <linearGradient id="mkShirt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7E8A6F"/><stop offset=".35" stop-color="#A9B399"/><stop offset="1" stop-color="#77826A"/></linearGradient>
+              <filter id="mkSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>
+            </defs>
+
+            <ellipse cx="320" cy="432" rx="310" ry="30" fill="url(#mkFloor)"/>
+            <line x1="24" y1="432" x2="616" y2="432" stroke="#fff" stroke-opacity=".07"/>
+
+            <!-- reception desk with the PC -->
+            <rect x="350" y="300" width="282" height="14" rx="7" fill="#262624"/>
+            <rect x="360" y="314" width="262" height="116" rx="14" fill="#0E0E0E" stroke="#1A1A1A"/>
+            <rect x="482" y="262" width="20" height="40" rx="4" fill="#2A2A28"/>
+            <rect x="446" y="294" width="92" height="8" rx="4" fill="#383835"/>
+            <rect x="342" y="52" width="292" height="212" rx="16" fill="#0A0A0A" stroke="#33332F" stroke-width="2"/>
+            <foreignObject x="352" y="62" width="272" height="192">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="mk-scr" data-mk-scr data-state="idle">
+                <div class="mk-scr__top"><b>Check-in</b><span>En línea</span></div>
+                <div class="mk-scr__card mk-scr__swap">
+                  <span style="width:58px" data-mk-masc>{{ masc_wink }}</span>
+                  <div class="mk-scr__who">
+                    <b data-mk-name>¡Bienvenido!</b>
+                    <small data-mk-plan>Coloca tu huella</small>
+                    <span class="mk-scr__pill" data-mk-pill>Listo</span>
+                  </div>
+                </div>
+                <div class="mk-scr__foot"><span>Hoy <b class="mk-num" data-mk-count>63</b></span><span class="mk-num" data-mk-time>10:30</span></div>
+              </div>
+            </foreignObject>
+
+            <!-- cable from the turnstile to the PC -->
+            <path d="M150 432 C 210 462, 360 462, 414 430" fill="none" stroke="#2A2A28" stroke-width="5" stroke-linecap="round"/>
+            <path id="mkPulse" d="M150 432 C 210 462, 360 462, 414 430" fill="none" stroke="#9AA58A" stroke-width="5" stroke-linecap="round" stroke-dasharray="26 400" stroke-dashoffset="26" opacity="0"/>
+            <ellipse cx="175" cy="434" rx="80" ry="7" fill="#000" opacity=".55" filter="url(#mkSoft)"/>
+
+            <!-- arms that turn away from the viewer, behind the member -->
+            <g id="mkArmsBack"></g>
+            <!-- the member while still on the far side of the arm -->
+            <g id="mkGuyBack"></g>
+
+            <!-- tripod turnstile, seen from the side: brushed steel column, reader on the top bevel -->
+            <rect x="122" y="243" width="55" height="189" fill="url(#mkCol)"/>
+            <rect x="122" y="243" width="55" height="189" fill="url(#mkColShade)"/>
+            <path d="M122 243 V217 Q122 212 127 212 H172 Q177 212 177 217 V243 Z" fill="url(#mkCham)"/>
+            <line x1="122" y1="243" x2="177" y2="243" stroke="#6E706B" stroke-width="1"/>
+            <rect x="129" y="217" width="41" height="21" rx="5" fill="#050505" stroke="#2C2C2C"/>
+            <g id="mkLed" fill="none" stroke="#6F7468" stroke-width="1.3" stroke-linecap="round" transform="translate(149.5 228)"><path d="M-6 4 Q-6 -5 0 -5 Q6 -5 6 4"/><path d="M-3.5 5 Q-3.5 -2.5 0 -2.5 Q3.5 -2.5 3.5 5"/><path d="M-1 5.5 Q-1 0 0 0 Q1 0 1 5.5"/></g>
+            <ellipse id="mkScan" cx="149.5" cy="228" rx="16" ry="8" fill="none" stroke="#9AA58A" stroke-width="2" opacity="0"/>
+            <ellipse id="mkHalo" cx="149.5" cy="228" rx="70" ry="40" fill="url(#mkGlow)" opacity="0"/>
+            <rect id="mkBar" x="138" y="254" width="23" height="4" rx="2" fill="#3A3A37"/>
+            <rect x="130" y="274" width="39" height="140" rx="6" fill="none" stroke="#000" stroke-opacity=".16"/>
+            <line x1="122.8" y1="216" x2="122.8" y2="432" stroke="#fff" stroke-opacity=".5" stroke-width="1.4"/>
+            <line x1="176.3" y1="216" x2="176.3" y2="432" stroke="#000" stroke-opacity=".3" stroke-width="1.4"/>
+            <rect x="176" y="212" width="5" height="34" rx="2" fill="url(#mkBarrel)"/>
+            <rect x="178" y="215" width="13" height="13" rx="4" fill="url(#mkBarrel)" transform="rotate(45 181 220)"/>
+
+            <!-- arms that come toward the viewer -->
+            <g id="mkArmsFront">
+              <g data-arm><line x1="189" y1="226" x2="312" y2="226" stroke="#2A2B28" stroke-width="8.5" stroke-linecap="round"/><line x1="189" y1="226" x2="312" y2="226" stroke="#ABADA7" stroke-width="6.5" stroke-linecap="round"/><line x1="189" y1="224.6" x2="312" y2="224.6" stroke="#F4F4F0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/></g>
+              <g data-arm><line x1="189" y1="226" x2="220" y2="318" stroke="#2A2B28" stroke-width="8.5" stroke-linecap="round"/><line x1="189" y1="226" x2="220" y2="318" stroke="#ABADA7" stroke-width="6.5" stroke-linecap="round"/><line x1="189" y1="224.6" x2="220" y2="316.6" stroke="#F4F4F0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/></g>
+              <g data-arm><line x1="189" y1="226" x2="220" y2="318" stroke="#2A2B28" stroke-width="8.5" stroke-linecap="round"/><line x1="189" y1="226" x2="220" y2="318" stroke="#ABADA7" stroke-width="6.5" stroke-linecap="round"/><line x1="189" y1="224.6" x2="220" y2="316.6" stroke="#F4F4F0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/></g>
+            </g>
+            <ellipse cx="189" cy="226" rx="3.6" ry="8" fill="url(#mkCap)" stroke="#E9E9E5" stroke-width=".8" transform="rotate(-45 189 226)"/>
+            <ellipse cx="189" cy="226" rx="1.4" ry="3" fill="#9AA58A" transform="rotate(-45 189 226)"/>
+
+            <!-- the member once through -->
+            <g id="mkGuyFront">
+              <g id="mkGuy" opacity="0">
+                <g data-g-body>
+                  <ellipse data-g-shadow cx="0" cy="2" rx="46" ry="7" fill="#000" opacity=".45" filter="url(#mkSoft)"/>
+                  <line data-g-legl x1="-15" y1="-150" x2="-17" y2="-6" stroke="#2E2F2C" stroke-width="23" stroke-linecap="round"/>
+                  <line data-g-legr x1="15" y1="-150" x2="17" y2="-6" stroke="#2E2F2C" stroke-width="23" stroke-linecap="round"/>
+                  <ellipse data-g-shoel cx="-18" cy="-2" rx="14" ry="7" fill="#EDEDE8"/>
+                  <ellipse data-g-shoer cx="18" cy="-2" rx="14" ry="7" fill="#EDEDE8"/>
+                  <rect x="-33" y="-190" width="66" height="54" rx="16" fill="#2E2F2C" stroke="#fff" stroke-opacity=".1"/>
+                  <line data-g-arml x1="-40" y1="-282" x2="-46" y2="-176" stroke="#CFCBC2" stroke-width="16" stroke-linecap="round"/>
+                  <line data-g-armr x1="40" y1="-282" x2="46" y2="-176" stroke="#CFCBC2" stroke-width="16" stroke-linecap="round"/>
+                  <path d="M-36 -296 Q-36 -304 -26 -304 H26 Q36 -304 36 -296 L33 -184 Q33 -176 25 -176 H-25 Q-33 -176 -33 -184 Z" fill="url(#mkShirt)"/>
+                  <path d="M-12 -304 Q0 -294 12 -304" fill="none" stroke="#000" stroke-opacity=".18" stroke-width="2"/>
+                  <rect x="-8" y="-318" width="16" height="16" rx="5" fill="#BDB8AE"/>
+                  <circle cx="0" cy="-334" r="21" fill="#CFCBC2"/>
+                  <path d="M-21 -336 Q-21 -357 0 -357 Q21 -357 21 -336 Q12 -346 0 -345 Q-12 -346 -21 -336 Z" fill="#2E2F2C"/>
+                </g>
+              </g>
+            </g>
+          </svg>
+          <div class="mk-scr mk-scr--card" data-mk-scr data-state="idle" aria-hidden="true">
+            <div class="mk-scr__top"><b>Check-in</b><span>En línea</span></div>
+            <div class="mk-scr__card mk-scr__swap">
+              <span style="width:58px" data-mk-masc>{{ masc_wink }}</span>
+              <div class="mk-scr__who"><b data-mk-name>¡Bienvenido!</b><small data-mk-plan>Coloca tu huella</small><span class="mk-scr__pill" data-mk-pill>Listo</span></div>
+            </div>
+            <div class="mk-scr__foot"><span>Hoy <b class="mk-num" data-mk-count>63</b></span><span class="mk-num" data-mk-time>10:30</span></div>
+          </div>
+          <figcaption class="mk-scene__cap mk-label"><span>Torniquete de media altura · recepción</span><span data-mk-capstate>En vivo</span></figcaption>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <section class="mk-sec mk-wrap" id="recepcion" aria-labelledby="mk-photo-h">
+    <figure class="mk-photo mk-ph" data-rise>
+      <img src="{{ 'mekka-recepcion.webp' | asset_url }}" alt="Recepción de un gimnasio oscuro con el logotipo de Mekka en el muro y un mostrador iluminado." width="1600" height="900" loading="lazy">
+      <span class="mk-photo__note">Imagen ilustrativa</span>
+      <figcaption class="mk-photo__card mk-glass">
+        <span class="mk-label">Recepción y check-in</span>
+        <h2 id="mk-photo-h">Tu gimnasio, con la marca de quien lo cuida.</h2>
+        <p>Torniquete, lector y pantalla de recepción trabajando juntos desde el primer día.</p>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="mk-sec mk-wrap" id="tablero" aria-labelledby="mk-rec-h">
+    <div class="mk-head">
+      <span class="mk-label" data-rise>Interfaz de software</span>
+      <h2 class="mk-h2" id="mk-rec-h" data-rise style="--d:1">Tu recepción, <em>en un tablero.</em></h2>
+      <p class="mk-lead" data-rise style="--d:2">Cada entrada del torniquete llega al tablero con su racha. La mascota te avisa quién cumple años y quién está por vencer.</p>
+    </div>
+
+    <div class="mk-app mk-glass" data-ui data-rise style="--d:3" role="img" aria-label="Tablero principal de Mekka Fitness Control con datos de ejemplo: 248 socios activos, 63 check-ins hoy, 41 rachas activas, 3 cumpleaños y 92 % de retención.">
+      <div class="mk-app__side mk-solid" aria-hidden="true">
+        <span class="mk-logo"><span style="width:30px">{{ masc_wink }}</span><img src="{{ 'mekka-wordmark.png' | asset_url }}" alt="" width="82" height="14"></span>
+        <b class="mk-label">Gimnasio</b>
+        <span class="is-on"><svg class="mk-i"><use href="#i-home"/></svg>Inicio</span>
+        <span><svg class="mk-i"><use href="#i-users"/></svg>Socios</span>
+        <span><svg class="mk-i"><use href="#i-check"/></svg>Check-in</span>
+        <span><svg class="mk-i"><use href="#i-flame"/></svg>Rachas</span>
+        <span><svg class="mk-i"><use href="#i-cake"/></svg>Cumpleaños</span>
+        <span><svg class="mk-i"><use href="#i-dumbbell"/></svg>Rutinas</span>
+        <span><svg class="mk-i"><use href="#i-person"/></svg>Clases</span>
+        <span><svg class="mk-i"><use href="#i-idcard"/></svg>Membresías</span>
+        <span><svg class="mk-i"><use href="#i-one"/></svg>Pagos</span>
+        <span><svg class="mk-i"><use href="#i-chart"/></svg>Reportes</span>
+      </div>
+      <div class="mk-app__main" aria-hidden="true">
+        <div class="mk-app__bar mk-solid"><span><b>Buenos días</b><small>Viernes 31 de octubre · Mekka Fitness Control</small></span><span class="mk-sample">Datos de ejemplo</span><span class="mk-av">RM</span></div>
+        <dl class="mk-kpis">
+          <div class="mk-kpi mk-solid"><dt><svg class="mk-i"><use href="#i-users"/></svg>Socios activos</dt><dd class="mk-num">248</dd><small>+12 este mes</small></div>
+          <div class="mk-kpi mk-solid"><dt><svg class="mk-i"><use href="#i-check"/></svg>Check-ins de hoy</dt><dd class="mk-num" data-mk-count2>63</dd><small>Hasta las 10:30</small></div>
+          <div class="mk-kpi mk-solid"><dt><svg class="mk-i"><use href="#i-flame"/></svg>Rachas activas</dt><dd class="mk-num">41</dd><small>7 días o más</small></div>
+          <div class="mk-kpi mk-solid"><dt><svg class="mk-i"><use href="#i-cake"/></svg>Cumpleaños</dt><dd class="mk-num">3</dd><small>Felicitación lista</small></div>
+          <div class="mk-kpi mk-solid"><dt><svg class="mk-i"><use href="#i-chart"/></svg>Retención</dt><dd class="mk-num">92 %</dd><small>Últimos 30 días</small></div>
+        </dl>
+        <div class="mk-app__cols">
+          <div class="mk-panel mk-solid">
+            <div class="mk-panel__top"><b><svg class="mk-i"><use href="#i-check"/></svg>Check-ins recientes</b><small>Hoy</small></div>
+            <div class="mk-list">
+              <div class="mk-li"><span class="mk-av">AR</span><span>Ana Ruiz</span><time>07:02</time><span class="mk-streak"><svg class="mk-i"><use href="#i-flame"/></svg>12 días</span></div>
+              <div class="mk-li"><span class="mk-av">LM</span><span>Luis Mora</span><time>07:15</time><span class="mk-streak"><svg class="mk-i"><use href="#i-flame"/></svg>5 días</span></div>
+              <div class="mk-li"><span class="mk-av">CG</span><span>Carla Gómez</span><time>08:40</time><span class="mk-streak"><svg class="mk-i"><use href="#i-flame"/></svg>21 días</span></div>
+              <div class="mk-li"><span class="mk-av">JP</span><span>Jorge Peña</span><time>09:05</time><span class="mk-streak"><svg class="mk-i"><use href="#i-flame"/></svg>3 días</span></div>
+              <div class="mk-li"><span class="mk-av">SV</span><span>Sofía Vega</span><time>09:48</time><span class="mk-streak"><svg class="mk-i"><use href="#i-flame"/></svg>9 días</span></div>
+            </div>
+          </div>
+          <div class="mk-panel mk-solid">
+            <div class="mk-panel__top"><b><svg class="mk-i"><use href="#i-chart"/></svg>Asistencia semanal</b><small>Esta semana</small></div>
+            <div class="mk-week">
+              {%- assign wk = '62,71,55,80,66,45,34' | split: ',' -%}
+              {%- for v in wk -%}{%- assign pct = v | times: 100 | divided_by: 80 -%}<i style="--v:{{ pct }};--n:{{ forloop.index0 }}"{% if forloop.index > 5 %} class="is-low"{% endif %}></i>{%- endfor -%}
+            </div>
+            <div class="mk-days"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+            <div class="mk-panel__foot"><span>Mejor día: jueves</span><span>Promedio: 59</span></div>
+          </div>
+          <div class="mk-panel mk-solid">
+            <div class="mk-panel__top"><b><svg class="mk-i"><use href="#i-chat"/></svg>Asistente Mekka</b></div>
+            <div class="mk-bot"><span style="width:52px">{{ masc_wink }}</span><span><b>Yo me encargo.</b><small>Hoy cumplen años 3 socios. ¿Les envío una felicitación por correo?</small></span></div>
+            <div class="mk-bot__acts"><span class="mk-chipbtn"><svg class="mk-i"><use href="#i-mail"/></svg>Enviar felicitación</span><span class="mk-chipbtn mk-chipbtn--ghost">Más tarde</span></div>
+            <div class="mk-minis"><div><b>5</b><small>Membresías por vencer</small></div><div><b>2</b><small>Clases llenas hoy</small></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mk-sec mk-wrap" id="funciones" aria-labelledby="mk-fn-h">
+    <div class="mk-head">
+      <span class="mk-label" data-rise>Funciones</span>
+      <h2 class="mk-h2" id="mk-fn-h" data-rise style="--d:1">Todo tu gimnasio, <em>en un sistema.</em></h2>
+      <p class="mk-lead" data-rise style="--d:2">Las mismas pantallas que vas a usar en tu recepción, sin módulos que se cobren aparte.</p>
+    </div>
+    <div class="mk-bento">
+      <article class="mk-tile mk-glass mk-t-7" data-rise>
+        <span class="mk-hexi" aria-hidden="true"><svg class="mk-i"><use href="#i-idcard"/></svg></span>
+        <h3>Membresías a tu medida</h3>
+        <p>Mensual, trimestral, anual o por visita. Renueva, congela y aplica descuentos al cobrar.</p>
+        <div class="mk-tile__ui" data-ui aria-hidden="true">
+          <div class="mk-plans">
+            <div class="mk-plan"><small>Mensual</small><b class="mk-num">$480</b></div>
+            <div class="mk-plan is-on"><small>Trimestral</small><b class="mk-num">$1,290</b></div>
+            <div class="mk-plan"><small>Anual</small><b class="mk-num">$4,600</b></div>
+          </div>
+          <div class="mk-row"><span><b>Estudiante</b><span class="mk-tag">Vigente</span></span><small>15 % · usado 29 veces</small></div>
+        </div>
+      </article>
+      <article class="mk-tile mk-glass mk-t-5" data-rise style="--d:1">
+        <span class="mk-hexi" aria-hidden="true"><svg class="mk-i"><use href="#i-check"/></svg></span>
+        <h3>Acceso con huella o rostro</h3>
+        <p>El torniquete solo gira para socios al corriente. Si alguien debe, lo ves en recepción al instante.</p>
+        <div class="mk-tile__ui" data-ui aria-hidden="true">
+          <div class="mk-row"><span><span class="mk-av">AR</span><span><b>Andrea R.</b><small>Mensual · vigente</small></span></span><span class="mk-tag">Permitido</span></div>
+          <div class="mk-row"><span><span class="mk-av">DP</span><span><b>Diego P.</b><small>Venció el 24/10</small></span></span><span class="mk-tag is-terra">Pasar a caja</span></div>
+        </div>
+      </article>
+      <article class="mk-tile mk-glass mk-t-4" data-rise>
+        <span class="mk-hexi" aria-hidden="true"><svg class="mk-i"><use href="#i-one"/></svg></span>
+        <h3>Ventas y caja</h3>
+        <p>Cobra agua, suplementos o productos y calcula el cambio solo.</p>
+        <div class="mk-tile__ui" data-ui aria-hidden="true">
+          <div class="mk-row"><span><span><b>Agua 1 L × 3</b><small>$20.00 c/u · Efectivo</small></span></span><span class="mk-big mk-num">$60</span></div>
+          <div class="mk-change"><span>Cambio a entregar</span><strong class="mk-num">$240</strong></div>
+        </div>
+      </article>
+      <article class="mk-tile mk-glass mk-t-4" data-rise style="--d:1">
+        <span class="mk-hexi" aria-hidden="true"><svg class="mk-i"><use href="#i-flame"/></svg></span>
+        <h3>Rachas que retienen</h3>
+        <p>Cada visita suma a la racha del socio. Los que vienen seguido, se quedan.</p>
+        <div class="mk-tile__ui" data-ui aria-hidden="true">
+          <div class="mk-row"><span><span class="mk-av">MF</span><b>Mariana Flores</b></span><span class="mk-streak"><svg class="mk-i"><use href="#i-flame"/></svg>30 días</span></div>
+          <div class="mk-row"><span><span class="mk-av">DT</span><b>Diego Torres</b></span><span class="mk-streak"><svg class="mk-i"><use href="#i-flame"/></svg>14 días</span></div>
+        </div>
+      </article>
+      <article class="mk-tile mk-glass mk-t-4" data-rise style="--d:2">
+        <span class="mk-hexi" aria-hidden="true"><svg class="mk-i"><use href="#i-wa"/></svg></span>
+        <h3>Recordatorios por WhatsApp</h3>
+        <p>Avisa antes de que venza una membresía, en un toque.</p>
+        <div class="mk-tile__ui" data-ui aria-hidden="true">
+          <div class="mk-row"><span><span class="mk-av">AR</span><span><b>Ana Rodríguez</b><small>Vence mañana</small></span></span><span class="mk-tag">Enviar</span></div>
+          <div class="mk-row"><span><span class="mk-av">LJ</span><span><b>Leonardo Jiménez</b><small>Vence en 4 días</small></span></span><span class="mk-tag">Enviar</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="mk-sec mk-wrap" id="usos" aria-labelledby="mk-who-h">
+    <div class="mk-who mk-glass" data-rise>
+      <div class="mk-who__text">
+        <span class="mk-label">Para quién es</span>
+        <h2 class="mk-h2 mk-who__h" id="mk-who-h"><span>¿Cobras membresía?</span> <em>Es para ti.</em></h2>
+        <p class="mk-lead">Cada socio con su plan, su horario y su acceso, sin importar tu disciplina.</p>
+      </div>
+      <ul class="mk-who__chips">
+        <li>Gimnasios</li><li>Natación</li><li>Box</li><li>Artes marciales</li><li>CrossFit</li><li>Yoga</li><li>Pilates</li><li>Danza</li><li>Fútbol</li><li>Tenis</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  function watch() {
+    var items = document.querySelectorAll('.mk [data-rise], .mk-bar, .mk-app, .mk-ph');
+    if (!('IntersectionObserver' in window)) { items.forEach(function (el) { el.classList.add('is-in'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -4% 0px' });
+    items.forEach(function (el) { io.observe(el); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
+})();
+
+/* The access scene: a member walks up, puts a finger on the reader, the PC checks the membership, the mascot winks and the turnstile turns to let them through. */
+(function () {
+  var scrs = Array.prototype.slice.call(document.querySelectorAll('[data-mk-scr]'));
+  var front = document.getElementById('mkArmsFront'), back = document.getElementById('mkArmsBack');
+  var guy = document.getElementById('mkGuy'), guyBack = document.getElementById('mkGuyBack'), guyFront = document.getElementById('mkGuyFront');
+  if (!scrs.length || !front || !back || !guy) return;
+  var armEls = Array.prototype.slice.call(front.querySelectorAll('[data-arm]'));
+  var BX = 189, BY = 226, AL = 123;
+  // tripod arms on a 45-degree cone; seen from the side, x is depth (positive = away from the viewer)
+  function place(deg) {
+    var th = deg * Math.PI / 180;
+    for (var i = 0; i < 3; i++) {
+      var t = th + i * 2 * Math.PI / 3, c = Math.cos(t);
+      var dx = Math.SQRT1_2 * Math.sin(t), dy = .5 + .5 * c, dz = -.5 + .5 * c;
+      var x2 = (BX + dy * AL).toFixed(1), y2 = (BY - dz * AL).toFixed(1);
+      var g = armEls[i], ls = g.querySelectorAll('line');
+      for (var k = 0; k < 3; k++) { ls[k].setAttribute('x2', x2); ls[k].setAttribute('y2', k === 2 ? (y2 - 1.4).toFixed(1) : y2); }
+      var behind = dx > .3;
+      g.setAttribute('opacity', behind ? '.7' : '1');
+      if (g.parentNode !== (behind ? back : front)) (behind ? back : front).appendChild(g);
+    }
+  }
+  place(0);
+
+  /* the member: a solid figure walking toward the viewer */
+  var q = function (s) { return guy.querySelector(s); };
+  var G = { legl: q('[data-g-legl]'), legr: q('[data-g-legr]'), shoel: q('[data-g-shoel]'), shoer: q('[data-g-shoer]'), arml: q('[data-g-arml]'), armr: q('[data-g-armr]') };
+  var pose = { x: 262, sc: .9, op: 0, step: 0, reach: 0 };
+  var CX = 262, FLOOR = 432, REACH = { x: 180, y: 224 };
+  function draw() {
+    var sw = Math.sin(pose.step), bob = Math.abs(sw) * 3;
+    var liftL = Math.max(0, sw) * 12, liftR = Math.max(0, -sw) * 12;
+    var fy = FLOOR + (pose.sc - 1) * 46; // nearer = lower on the floor
+    guy.setAttribute('transform', 'translate(' + pose.x.toFixed(1) + ' ' + (fy - bob).toFixed(1) + ') scale(' + pose.sc.toFixed(3) + ')');
+    guy.setAttribute('opacity', pose.op.toFixed(2));
+    G.legl.setAttribute('y2', (-6 - liftL).toFixed(1)); G.shoel.setAttribute('cy', (-2 - liftL).toFixed(1));
+    G.legr.setAttribute('y2', (-6 - liftR).toFixed(1)); G.shoer.setAttribute('cy', (-2 - liftR).toFixed(1));
+    G.armr.setAttribute('x2', (46 + sw * 6).toFixed(1)); G.armr.setAttribute('y2', (-176 + Math.abs(sw) * 4).toFixed(1));
+    // left arm (screen left) swings, or reaches for the reader
+    var rx = (REACH.x - pose.x) / pose.sc, ry = (REACH.y - (fy - bob)) / pose.sc;
+    var ax = -46 - sw * 6, ay = -176 + Math.abs(sw) * 4;
+    G.arml.setAttribute('x2', (ax + (rx - ax) * pose.reach).toFixed(1));
+    G.arml.setAttribute('y2', (ay + (ry - ay) * pose.reach).toFixed(1));
+  }
+  function layer(inFront) { var p = inFront ? guyFront : guyBack; if (guy.parentNode !== p) p.appendChild(guy); }
+  layer(false); draw();
+
+  var all = function (s) { var r = []; scrs.forEach(function (x) { r = r.concat(Array.prototype.slice.call(x.querySelectorAll(s))); }); return r; };
+  var led = document.getElementById('mkLed'), scan = document.getElementById('mkScan'), bar = document.getElementById('mkBar');
+  var pulse = document.getElementById('mkPulse'), halo = document.getElementById('mkHalo');
+  var cap = document.querySelector('[data-mk-capstate]');
+  var counts = all('[data-mk-count]').concat([document.querySelector('[data-mk-count2]')]);
+  var eyes = all('[data-mk-masc] [data-eye]');
+  var DASH = 'M60.1 42.95 L69.05 42.95 L78.0 42.95', CARET = 'M60.1 46.6 L69.05 37.6 L78.0 46.6';
+  function face(wink) { eyes.forEach(function (e) { e.setAttribute('d', wink ? DASH : CARET); }); }
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var people = [
+    ['Andrea', 'Mensual · vigente', '12 días', true],
+    ['Jorge', 'Anual · vigente', '5 días', true],
+    ['Lucía', 'Vence en 2 días', '21 días', true],
+    ['Diego', 'Venció el 24 de octubre', '', false],
+    ['Karla', 'Pilates · vigente', '9 días', true],
+    ['Mario', 'Box · vigente', '3 días', true]
+  ];
+  var shirts = ['#9AA58A', '#D9C6A3', '#8E9A7E', '#B8826A', '#C9CDBF', '#A9B399'];
+  var shirtStops = guy.ownerDocument.querySelectorAll('#mkShirt stop');
+  function shirt(c) { shirtStops.forEach(function (s, i) { s.setAttribute('stop-color', c); s.setAttribute('stop-opacity', '1'); }); shirtStops[0].setAttribute('stop-opacity', '.8'); }
+  var idx = 0, angle = 0, total = 63, minute = 30, running = false, visible = true;
+  var flame = '<svg class="mk-i"><use href="#i-flame"/></svg>';
+
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function setText(state, name, plan, pill) {
+    scrs.forEach(function (x) { x.classList.add('is-swapping'); });
+    return wait(180).then(function () {
+      scrs.forEach(function (x) {
+        x.dataset.state = state;
+        x.querySelector('[data-mk-name]').textContent = name;
+        x.querySelector('[data-mk-plan]').textContent = plan;
+        x.querySelector('[data-mk-pill]').innerHTML = pill;
+        x.classList.remove('is-swapping');
+      });
+    });
+  }
+  function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function out(t) { return 1 - Math.pow(1 - t, 3); }
+  function tween(ms, fn, curve) {
+    return new Promise(function (done) {
+      var t0 = performance.now();
+      (function frame(now) {
+        var t = Math.min(1, (now - t0) / ms);
+        fn((curve || ease)(t), t);
+        if (t < 1) requestAnimationFrame(frame); else done();
+      })(t0);
+    });
+  }
+  function turn(from, to, ms) { return tween(ms, function (e) { place(from + (to - from) * e); }); }
+  function walk(ms, to, opTo, steps) {
+    var s0 = pose.sc, o0 = pose.op, st0 = pose.step;
+    return tween(ms, function (e, t) {
+      pose.sc = s0 + (to - s0) * e; pose.op = o0 + (opTo - o0) * Math.min(1, t * 1.6);
+      pose.step = st0 + t * steps * Math.PI; draw();
+    }, function (t) { return t; });
+  }
+  function anim(el, frames, opts) { return el.animate ? el.animate(frames, opts).finished.catch(function () {}) : Promise.resolve(); }
+
+  async function cycle() {
+    var p = people[idx % people.length]; shirt(shirts[idx % shirts.length]); idx++;
+    face(false);
+    await setText('idle', '¡Bienvenido!', 'Coloca tu huella', 'Listo');
+    led.setAttribute('stroke', '#6F7468'); bar.setAttribute('fill', '#3A3A37'); if (cap) cap.textContent = 'En vivo';
+    // walk up to the arm
+    layer(false); pose.sc = .84; pose.op = 0; pose.step = 0; pose.reach = 0; draw();
+    await walk(1300, 1, 1, 4);
+    pose.step = 0; draw();
+    await wait(200);
+    await tween(420, function (e) { pose.reach = e; draw(); });
+    led.setAttribute('stroke', '#C9D1BC');
+    await anim(scan, [{ opacity: .9, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.9)' }], { duration: 650, easing: 'cubic-bezier(.23,1,.32,1)' });
+    pulse.setAttribute('opacity', '1');
+    tween(380, function (e) { pose.reach = 1 - e; draw(); });
+    await anim(pulse, [{ strokeDashoffset: 26 }, { strokeDashoffset: -330 }], { duration: 560, easing: 'cubic-bezier(.77,0,.175,1)' });
+    pulse.setAttribute('opacity', '0');
+    minute = Math.min(59, minute + 1 + (idx % 2));
+    all('[data-mk-time]').forEach(function (t) { t.textContent = '10:' + (minute < 10 ? '0' : '') + minute; });
+    if (p[3]) {
+      face(true);
+      await setText('ok', '¡Hola, ' + p[0] + '!', p[1], flame + 'Racha de ' + p[2]);
+      led.setAttribute('stroke', '#9AA58A'); bar.setAttribute('fill', '#9AA58A'); if (cap) cap.textContent = 'Acceso permitido';
+      anim(halo, [{ opacity: 0 }, { opacity: .8 }, { opacity: 0 }], { duration: 1400, easing: 'ease' });
+      total++; counts.forEach(function (c) { if (c) c.textContent = total; });
+      await wait(200);
+      // the arm swings down as the member pushes through
+      var a0 = angle;
+      var s0 = pose.sc, st0 = pose.step;
+      await tween(1500, function (e, t) {
+        place(a0 + 120 * ease(Math.min(1, t * 1.25)));
+        pose.sc = s0 + .16 * t; pose.step = st0 + t * 4 * Math.PI;
+        pose.op = t < .8 ? 1 : 1 - (t - .8) / .2;
+        if (t > .32) layer(true);
+        draw();
+      }, function (t) { return t; });
+      angle = (angle + 120) % 360; place(angle);
+      await wait(900);
+    } else {
+      await setText('no', 'Hola, ' + p[0], p[1], 'Pasa a recepción');
+      led.setAttribute('stroke', '#B8826A'); bar.setAttribute('fill', '#B8826A'); if (cap) cap.textContent = 'Membresía vencida';
+      await turn(angle, angle + 6, 120); await turn(angle + 6, angle - 4, 140); await turn(angle - 4, angle, 160);
+      await wait(1100);
+      // steps back toward reception
+      await walk(1000, .82, 0, 3);
+      await wait(600);
+    }
+  }
+  async function loop() {
+    if (running) return; running = true;
+    while (visible && !document.hidden) { await cycle(); }
+    running = false;
+  }
+  if (reduce) {
+    face(true); shirt(shirts[0]);
+    pose.sc = 1; pose.op = 1; draw();
+    setText('ok', '¡Hola, Andrea!', 'Mensual · vigente', flame + 'Racha de 12 días');
+    led.setAttribute('stroke', '#9AA58A'); bar.setAttribute('fill', '#9AA58A');
+    return;
+  }
+  var stage = document.querySelector('.mk-scene');
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible) loop(); }).observe(stage);
+  } else loop();
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && visible) loop(); });
+})();
+</script>
+
+{% schema %}
+{"name":"Mekka · Inicio (arriba)","settings":[],"presets":[{"name":"Mekka · Inicio (arriba)"}]}
+{% endschema %}
