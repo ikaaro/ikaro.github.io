@@ -1,0 +1,139 @@
+{%- comment -%} Mekka products page: packages first, then individual products. Packages are products tagged "paquete". {%- endcomment -%}
+{%- render 'mekka-base' -%}
+{%- assign wa = section.settings.whatsapp | remove: ' ' | remove: '+' | remove: '-' -%}
+<style>
+  #mkc-{{ section.id }} .mkc-hero{padding-top:clamp(40px,6vw,88px);max-width:760px}
+  #mkc-{{ section.id }} .mkc-hero h1{font-family:var(--mk-f-title);font-size:clamp(40px,6vw,72px);line-height:1;letter-spacing:-.03em;font-weight:500;color:#fff;margin:14px 0 16px}
+  #mkc-{{ section.id }} .mkc-hero p{font-size:clamp(16px,1.6vw,19px);color:var(--mk-muted);line-height:1.5;max-width:560px}
+  #mkc-{{ section.id }} .mkc-head{margin-bottom:28px}
+  #mkc-{{ section.id }} .mkc-paqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:16px}
+  #mkc-{{ section.id }} .mkc-paq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(16px,2.4vw,32px);padding:14px;border-radius:var(--mk-r-xl);align-items:center;transition:background-color 200ms ease}
+  #mkc-{{ section.id }} .mkc-paq figure{aspect-ratio:1/1;border-radius:22px;background:#EEEDE8;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0}
+  #mkc-{{ section.id }} .mkc-paq figure img{width:92%;height:92%;object-fit:contain}
+  #mkc-{{ section.id }} .mkc-paq__b{display:flex;flex-direction:column;gap:14px;padding:8px 10px 8px 0}
+  #mkc-{{ section.id }} .mkc-badge{align-self:flex-start;font-family:var(--mk-f-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#0b0b0b;background:var(--mk-sage);border-radius:999px;padding:6px 10px}
+  #mkc-{{ section.id }} .mkc-paq h3{font-family:var(--mk-f-title);font-size:clamp(24px,2.6vw,32px);line-height:1.1;letter-spacing:-.02em;font-weight:500;color:#fff;margin:0}
+  #mkc-{{ section.id }} .mkc-inc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:15px;color:#e6e6e6}
+  #mkc-{{ section.id }} .mkc-inc li{display:flex;gap:10px;align-items:flex-start}
+  #mkc-{{ section.id }} .mkc-inc svg{flex:none;width:18px;height:18px;margin-top:1px;color:var(--mk-sage)}
+  #mkc-{{ section.id }} .mkc-price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  #mkc-{{ section.id }} .mkc-price b{font-family:var(--mk-f-title);font-size:28px;font-weight:500;color:#fff;font-variant-numeric:tabular-nums}
+  #mkc-{{ section.id }} .mkc-price s{color:var(--mk-muted);font-size:16px}
+  #mkc-{{ section.id }} .mkc-price small{width:100%;font-size:13px;color:var(--mk-muted)}
+  #mkc-{{ section.id }} .mkc-paq .mk-btn{align-self:flex-start}
+  #mkc-{{ section.id }} .mkc-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  #mkc-{{ section.id }} .mkc-card{display:flex;flex-direction:column;gap:12px;padding:12px 12px 18px;border-radius:var(--mk-r-lg);transition:background-color 200ms ease}
+  #mkc-{{ section.id }} .mkc-card figure{aspect-ratio:1/1;border-radius:20px;background:#EEEDE8;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0}
+  #mkc-{{ section.id }} .mkc-card img{width:80%;height:80%;object-fit:contain}
+  #mkc-{{ section.id }} figure.is-foto img{width:100%;height:100%;object-fit:cover}
+  #mkc-{{ section.id }} .mkc-card h3{font-family:var(--mk-f-title);font-size:18px;line-height:1.25;font-weight:500;color:#fff;padding:0 6px;margin:0}
+  #mkc-{{ section.id }} .mkc-card span{font-size:15px;color:var(--mk-muted);padding:0 6px;font-variant-numeric:tabular-nums}
+  @media (hover:hover) and (pointer:fine){
+    #mkc-{{ section.id }} .mkc-card:hover,#mkc-{{ section.id }} .mkc-paq:hover{background:rgba(255,255,255,.12)}
+  }
+  @media (max-width:980px){#mkc-{{ section.id }} .mkc-grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:600px){
+    #mkc-{{ section.id }} .mkc-paq{grid-template-columns:1fr}
+    #mkc-{{ section.id }} .mkc-paq__b{padding:4px 8px 8px}
+  }
+</style>
+
+<div class="mk mk-pg" id="top">
+  <div class="mk-wrap" id="mkc-{{ section.id }}">
+    {%- render 'mekka-topbar' -%}
+
+    <header class="mkc-hero">
+      <nav class="mk-crumb" aria-label="Ruta"><a href="{{ routes.root_url }}">Inicio</a> / <span>Productos</span></nav>
+      <h1>{{ section.settings.title }}</h1>
+      <p>{{ section.settings.intro }}</p>
+    </header>
+
+    {%- liquid
+      assign paqs = ''
+      for x in collections.all.products
+        if x.tags contains 'paquete'
+          assign paqs = paqs | append: x.handle | append: ','
+        endif
+      endfor
+    -%}
+    {%- if paqs != blank -%}
+    <section class="mk-sec mk-sec--s" aria-labelledby="mkc-paq-{{ section.id }}">
+      <div class="mk-head mkc-head">
+        <span class="mk-label">Todo en uno</span>
+        <h2 class="mk-h2" id="mkc-paq-{{ section.id }}">Paquetes</h2>
+      </div>
+      <div class="mkc-paqs">
+        {%- for x in collections.all.products -%}
+          {%- if x.tags contains 'paquete' -%}
+            {%- assign items = x.description | split: '<li>' -%}
+            <a class="mkc-paq mk-glass" href="{{ x.url }}">
+              <figure{% if x.featured_media.preview_image.src contains '.jp' %} class="is-foto"{% endif %}>{%- if x.featured_media -%}{{ x.featured_media | image_url: width: 900 | image_tag: loading: 'eager', sizes: '(max-width: 600px) 100vw, 30vw', alt: x.title }}{%- endif -%}</figure>
+              <div class="mkc-paq__b">
+                {%- if x.compare_at_price > x.price -%}<span class="mkc-badge">Ahorras {{ x.compare_at_price | minus: x.price | money_without_trailing_zeros }}</span>{%- endif -%}
+                <h3>{{ x.title }}</h3>
+                {%- if items.size > 1 -%}
+                  <ul class="mkc-inc">
+                    {%- for it in items offset: 1 -%}
+                      <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>{{ it | split: '</li>' | first | strip_html | strip }}</li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+                <div class="mkc-price">
+                  <b>{{ x.price | money_without_trailing_zeros }}</b>
+                  {%- if x.compare_at_price > x.price -%}<s>{{ x.compare_at_price | money_without_trailing_zeros }}</s>{%- endif -%}
+                  <small>Pago único. Sin mensualidades.</small>
+                </div>
+                <span class="mk-btn">Ver paquete <svg class="mk-i" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+              </div>
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </section>
+    {%- endif -%}
+
+    <section class="mk-sec mk-sec--s" aria-labelledby="mkc-prod-{{ section.id }}">
+      <div class="mk-head mkc-head">
+        <span class="mk-label">Compra individual</span>
+        <h2 class="mk-h2" id="mkc-prod-{{ section.id }}">Productos</h2>
+      </div>
+      <div class="mkc-grid">
+        {%- for x in collections.all.products -%}
+          {%- unless x.tags contains 'paquete' or x.handle == 'software-mekka-lanzamiento' -%}
+            <a class="mkc-card mk-glass" href="{{ x.url }}">
+              <figure{% if x.featured_media.preview_image.src contains '.jp' %} class="is-foto"{% endif %}>{%- if x.featured_media -%}{{ x.featured_media | image_url: width: 600 | image_tag: loading: 'lazy', sizes: '(max-width: 980px) 50vw, 25vw', alt: x.title }}{%- endif -%}</figure>
+              <h3>{{ x.title }}</h3>
+              <span>{{ x.price | money_without_trailing_zeros }}</span>
+            </a>
+          {%- endunless -%}
+        {%- endfor -%}
+      </div>
+    </section>
+
+    <section class="mk-sec mk-sec--s" aria-labelledby="mkc-cta-{{ section.id }}">
+      <div class="mk-cta mk-glass">
+        <div>
+          <span class="mk-label">¿No sabes cuál elegir?</span>
+          <h2 id="mkc-cta-{{ section.id }}">Te ayudamos a armarlo.</h2>
+          <p>Cuéntanos cómo es tu gimnasio y te decimos qué necesitas. Instalación en un día en CDMX y Edomex.</p>
+        </div>
+        <div class="mk-cta__acts">
+          <a class="mk-btn" href="{{ routes.root_url }}#paquete">Arma tu paquete <svg class="mk-i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          {%- if wa != blank -%}<a class="mk-btn mk-btn--glass" href="https://wa.me/{{ wa }}" target="_blank" rel="noopener">WhatsApp</a>{%- endif -%}
+        </div>
+      </div>
+    </section>
+  </div>
+  {%- render 'mekka-pie' -%}
+</div>
+
+{% schema %}
+{
+  "name": "Mekka catálogo",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Título", "default": "Productos" },
+    { "type": "textarea", "id": "intro", "label": "Texto", "default": "Elige un paquete listo para tu entrada o compra cada pieza por separado. Todo funciona con Mekka, sin mensualidades." },
+    { "type": "text", "id": "whatsapp", "label": "WhatsApp", "default": "525533416240" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,31 @@
+{%- comment -%} Glass top bar shared by Mekka pages, blog and articles. {%- endcomment -%}
+<header class="mk-top mk-glass">
+  <a class="mk-logo" href="{{ routes.root_url }}" aria-label="Mekka, inicio">
+    <span style="width:42px"><svg class="mk-masc" viewBox="0 0 100 76.9" aria-hidden="true"><use href="#m-body"/><path class="e" d="M22.0 46.6 L30.95 37.6 L39.9 46.6"/><path class="e" d="M60.1 42.95 L69.05 42.95 L78.0 42.95"/></svg></span>
+    <img src="{{ 'mekka-wordmark.png' | asset_url }}" alt="" width="117" height="20">
+  </a>
+  <nav class="mk-top__nav" aria-label="Principal">
+    <a href="{{ routes.root_url }}">Inicio</a>
+    <a href="{{ routes.all_products_collection_url }}">Productos</a>
+    <a href="/pages/software-para-gimnasio-sin-mensualidades">Sin mensualidades</a>
+    <a href="/pages/plantillas-gimnasio-excel">Plantillas gratis</a>
+    <a href="/blogs/gimnasios">Blog</a>
+  </nav>
+  <div class="mk-top__end">
+    <details class="mk-menu">
+      <summary>Menú <svg class="mk-i" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+      <nav aria-label="Menú">
+        <a href="{{ routes.root_url }}">Inicio</a>
+        <a href="{{ routes.all_products_collection_url }}">Productos</a>
+        <a href="/pages/software-para-gimnasio-sin-mensualidades">Sin mensualidades</a>
+        <a href="/pages/plantillas-gimnasio-excel">Plantillas gratis</a>
+        <a href="/pages/calculadora-costo-software-gimnasio">Calculadora</a>
+        <a href="/blogs/gimnasios">Blog</a>
+        <a class="is-cta" href="{{ routes.root_url }}#precio">Ver precio</a>
+      </nav>
+    </details>
+    <a class="mk-btn mk-btn--sm" href="{{ routes.root_url }}#precio">Ver precio</a>
+  </div>
+</header>
+<script>document.querySelectorAll('.mk-menu a').forEach(function(a){a.addEventListener('click',function(){a.closest('details').open=false;});});document.addEventListener('click',function(e){document.querySelectorAll('.mk-menu[open]').forEach(function(d){if(!d.contains(e.target))d.open=false;});});</script>
+
