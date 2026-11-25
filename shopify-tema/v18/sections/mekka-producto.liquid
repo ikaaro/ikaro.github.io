@@ -1,0 +1,249 @@
+{%- comment -%} Mekka product page: same look as the home page (dark, glass, Space Grotesk), gallery, price, buy, WhatsApp, details, reviews (app blocks) and more products. {%- endcomment -%}
+{%- render 'mekka-base' -%}
+{%- liquid
+  assign p = product
+  assign v = p.selected_or_first_available_variant
+  assign wa = section.settings.whatsapp | remove: ' ' | remove: '+' | remove: '-'
+  assign wa_msg = 'Hola, quiero información de ' | append: p.title | append: '.'
+  assign rating = p.metafields.reviews.rating.value
+  assign rating_count = p.metafields.reviews.rating_count.value | default: 0
+-%}
+<style>
+  #mkp-{{ section.id }} .mkp-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:start;padding-top:clamp(32px,5vw,72px)}
+  #mkp-{{ section.id }} .mkp-gal{position:sticky;top:24px;display:flex;flex-direction:column;gap:12px}
+  #mkp-{{ section.id }} .mkp-main{position:relative;aspect-ratio:1/1;border-radius:var(--mk-r-xl);overflow:hidden;background:#EEEDE8;display:flex;align-items:center;justify-content:center}
+  #mkp-{{ section.id }} .mkp-main img{width:86%;height:86%;object-fit:contain;display:block;transition:opacity 220ms ease}
+  #mkp-{{ section.id }} .mkp-main .mkp-ph{color:#000;opacity:.25}
+  #mkp-{{ section.id }} .mkp-main .mkp-ph svg{width:96px;height:96px}
+  #mkp-{{ section.id }} .mkp-thumbs{display:flex;gap:8px;overflow-x:auto;padding:2px}
+  #mkp-{{ section.id }} .mkp-thumbs button{flex:0 0 auto;width:76px;height:76px;border-radius:18px;border:0;padding:0;background:#EEEDE8;cursor:pointer;overflow:hidden;box-shadow:inset 0 0 0 2px transparent;transition:box-shadow 200ms ease,opacity 200ms ease;opacity:.6}
+  #mkp-{{ section.id }} .mkp-thumbs button[aria-current="true"]{box-shadow:inset 0 0 0 2px var(--mk-sage);opacity:1}
+  #mkp-{{ section.id }} .mkp-thumbs img{width:100%;height:100%;object-fit:contain}
+  #mkp-{{ section.id }} .mkp-info{display:flex;flex-direction:column;gap:22px}
+  #mkp-{{ section.id }} .mkp-info h1{font-family:var(--mk-f-title);font-size:clamp(34px,4.2vw,58px);line-height:1.04;font-weight:500;letter-spacing:-.03em;color:#fff;text-wrap:balance}
+  #mkp-{{ section.id }} .mkp-stars{display:inline-flex;align-items:center;gap:10px;font-size:14px;color:var(--mk-muted)}
+  #mkp-{{ section.id }} .mkp-stars i{display:inline-block;width:92px;height:16px;background:linear-gradient(90deg,var(--mk-sage) var(--r),rgba(255,255,255,.18) var(--r));-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 92 16'%3E%3Cg fill='%23000'%3E%3Cpath id='s' d='M8 0l2.4 5 5.6.6-4.2 3.8 1.2 5.6L8 12.2 3 15l1.2-5.6L0 5.6 5.6 5z'/%3E%3Cuse href='%23s' x='19'/%3E%3Cuse href='%23s' x='38'/%3E%3Cuse href='%23s' x='57'/%3E%3Cuse href='%23s' x='76'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 92 16'%3E%3Cg fill='%23000'%3E%3Cpath id='s' d='M8 0l2.4 5 5.6.6-4.2 3.8 1.2 5.6L8 12.2 3 15l1.2-5.6L0 5.6 5.6 5z'/%3E%3Cuse href='%23s' x='19'/%3E%3Cuse href='%23s' x='38'/%3E%3Cuse href='%23s' x='57'/%3E%3Cuse href='%23s' x='76'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
+  #mkp-{{ section.id }} .mkp-stars a{color:var(--mk-text);text-decoration:underline;text-underline-offset:3px}
+  #mkp-{{ section.id }} .mkp-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:12px}
+  #mkp-{{ section.id }} .mkp-price strong{font-family:var(--mk-f-title);font-size:clamp(34px,3.4vw,46px);font-weight:500;letter-spacing:-.02em;color:#fff;font-variant-numeric:tabular-nums}
+  #mkp-{{ section.id }} .mkp-price s{font-size:18px;color:var(--mk-soft)}
+  #mkp-{{ section.id }} .mkp-price .mkp-off{display:inline-flex;align-items:center;min-height:28px;padding:0 12px;border-radius:999px;background:var(--mk-sage);color:#000;font-family:var(--mk-f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  #mkp-{{ section.id }} .mkp-once{font-size:15px;color:var(--mk-muted);margin-top:-12px}
+  #mkp-{{ section.id }} .mkp-short{font-size:var(--mk-t-lead);line-height:1.6;color:var(--mk-muted);max-width:52ch}
+  #mkp-{{ section.id }} .mkp-buy{padding:24px;border-radius:var(--mk-r-lg);display:flex;flex-direction:column;gap:14px}
+  #mkp-{{ section.id }} .mkp-buy .mk-btn{width:100%}
+  #mkp-{{ section.id }} .mkp-row{display:flex;gap:10px}
+  #mkp-{{ section.id }} .mkp-row .mk-btn{flex:1}
+  #mkp-{{ section.id }} .mkp-var{display:flex;flex-direction:column;gap:8px}
+  #mkp-{{ section.id }} .mkp-var label{font-size:14px;font-weight:600;color:#fff}
+  #mkp-{{ section.id }} .mkp-var select{min-height:52px;padding:0 16px;border-radius:16px;border:1px solid var(--mk-line-2);background:rgba(0,0,0,.35);color:#fff;font:500 16px var(--mk-f-text)}
+  #mkp-{{ section.id }} .mkp-qty{display:inline-flex;align-items:center;border-radius:999px;box-shadow:inset 0 0 0 1px var(--mk-line-2);min-height:52px}
+  #mkp-{{ section.id }} .mkp-qty button{width:48px;height:52px;border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer}
+  #mkp-{{ section.id }} .mkp-qty input{width:40px;border:0;background:transparent;color:#fff;text-align:center;font:600 16px var(--mk-f-text);-moz-appearance:textfield}
+  #mkp-{{ section.id }} .mkp-qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+  #mkp-{{ section.id }} .mkp-trust{display:flex;flex-wrap:wrap;gap:8px}
+  #mkp-{{ section.id }} .mkp-trust li{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--mk-line);font-size:13px;font-weight:600;color:#fff}
+  #mkp-{{ section.id }} .mkp-trust li svg.mk-i{width:16px;height:16px;color:var(--mk-sage)}
+  #mkp-{{ section.id }} .mkp-mp{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--mk-mp)}
+  #mkp-{{ section.id }} .mkp-mp svg.mk-i{width:15px;height:15px}
+  #mkp-{{ section.id }} .mkp-desc{margin-top:8px;padding-top:24px;border-top:1px solid var(--mk-line)}
+  #mkp-{{ section.id }} .mkp-err{font-size:14px;color:var(--mk-bad)}
+  /* reviews: Judge.me on the dark brand */
+  #mkp-{{ section.id }} .mkp-rev{padding:clamp(24px,4vw,48px);border-radius:var(--mk-r-xl)}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-widget,#mkp-{{ section.id }} .mkp-rev .jdgm-rev-widg{color:var(--mk-text) !important;font-family:var(--mk-f-text) !important;background:transparent !important;max-width:none !important;padding:0 !important;margin:0 !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-rev-widg__title{font-family:var(--mk-f-title) !important;color:#fff !important;font-weight:500 !important;font-size:clamp(28px,3vw,40px) !important;letter-spacing:-.02em;text-align:left !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-star,#mkp-{{ section.id }} .mkp-rev .jdgm-star.jdgm--on:before,#mkp-{{ section.id }} .mkp-rev .jdgm-star.jdgm--half:before{color:var(--mk-sage) !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-rev,#mkp-{{ section.id }} .mkp-rev .jdgm-rev-widg__summary,#mkp-{{ section.id }} .mkp-rev .jdgm-rev-widg__header{border-color:var(--mk-line) !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-rev__author,#mkp-{{ section.id }} .mkp-rev .jdgm-rev__title{color:#fff !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-rev__body,#mkp-{{ section.id }} .mkp-rev .jdgm-rev__timestamp,#mkp-{{ section.id }} .mkp-rev .jdgm-rev-widg__summary-text,#mkp-{{ section.id }} .mkp-rev .jdgm-histogram,#mkp-{{ section.id }} .mkp-rev .jdgm-rev__buyer-badge-wrapper{color:var(--mk-muted) !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-histogram__bar{background:rgba(255,255,255,.08) !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-histogram__bar-content{background:var(--mk-sage) !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-write-rev-link,#mkp-{{ section.id }} .mkp-rev .jdgm-ask-question-btn,#mkp-{{ section.id }} .mkp-rev .jdgm-submit-rev,#mkp-{{ section.id }} .mkp-rev .jdgm-btn--solid{background:var(--mk-sage) !important;color:#000 !important;border:0 !important;border-radius:999px !important;min-height:48px;padding:0 24px !important;font:600 15px var(--mk-f-text) !important;display:inline-flex !important;align-items:center;justify-content:center}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-btn--border{color:#fff !important;border-color:var(--mk-line-2) !important;border-radius:999px !important}
+  #mkp-{{ section.id }} .mkp-rev input,#mkp-{{ section.id }} .mkp-rev textarea{background:rgba(0,0,0,.35) !important;border:1px solid var(--mk-line-2) !important;color:#fff !important;border-radius:14px !important}
+  #mkp-{{ section.id }} .mkp-rev .jdgm-form label,#mkp-{{ section.id }} .mkp-rev .jdgm-form__title{color:#fff !important}
+  #mkp-{{ section.id }} .mkp-rev a{color:var(--mk-sage)}
+  /* more products */
+  #mkp-{{ section.id }} .mkp-more{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  #mkp-{{ section.id }} .mkp-card{display:flex;flex-direction:column;gap:12px;padding:12px 12px 18px;border-radius:var(--mk-r-lg);transition:background-color 200ms ease}
+  #mkp-{{ section.id }} .mkp-card figure{aspect-ratio:1/1;border-radius:20px;background:#EEEDE8;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #mkp-{{ section.id }} .mkp-card img{width:80%;height:80%;object-fit:contain}
+  #mkp-{{ section.id }} .mkp-card h3{font-family:var(--mk-f-title);font-size:18px;line-height:1.25;font-weight:500;color:#fff;padding:0 6px}
+  #mkp-{{ section.id }} .mkp-card span{font-size:15px;color:var(--mk-muted);padding:0 6px;font-variant-numeric:tabular-nums}
+  @media (hover:hover) and (pointer:fine){#mkp-{{ section.id }} .mkp-card:hover{background:rgba(255,255,255,.12)}}
+  @media (max-width:980px){
+    #mkp-{{ section.id }} .mkp-grid{grid-template-columns:1fr}
+    #mkp-{{ section.id }} .mkp-gal{position:static}
+    #mkp-{{ section.id }} .mkp-more{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:520px){#mkp-{{ section.id }} .mkp-row{flex-direction:column}}
+</style>
+
+<div class="mk mk-pg" id="top">
+  <div class="mk-wrap" id="mkp-{{ section.id }}">
+    {%- render 'mekka-topbar' -%}
+
+    <div class="mkp-grid">
+      <div class="mkp-gal">
+        <div class="mkp-main" data-mkp-main>
+          {%- if p.featured_media -%}
+            {{ p.featured_media | image_url: width: 1400 | image_tag: loading: 'eager', fetchpriority: 'high', sizes: '(max-width: 980px) 100vw, 50vw', alt: p.title, class: 'mkp-img' }}
+          {%- else -%}
+            <span class="mkp-ph"><svg class="mk-i" aria-hidden="true"><use href="#i-box"/></svg></span>
+          {%- endif -%}
+        </div>
+        {%- if p.media.size > 1 -%}
+          <div class="mkp-thumbs" role="list" aria-label="Fotos del producto">
+            {%- for m in p.media -%}
+              {%- if m.media_type == 'image' -%}
+                <button type="button" role="listitem" aria-label="Ver foto {{ forloop.index }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" data-mkp-thumb="{{ m | image_url: width: 1400 }}">
+                  {{ m | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}
+                </button>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="mkp-info">
+        <nav class="mk-crumb mk-label" aria-label="Ruta"><a href="{{ routes.root_url }}">Inicio</a><span aria-hidden="true">/</span><a href="{{ routes.all_products_collection_url }}">Productos</a></nav>
+        <h1>{{ p.title }}</h1>
+        {%- if rating_count > 0 -%}
+          {%- assign pct = rating.rating | divided_by: rating.scale_max | times: 100 -%}
+          <a class="mkp-stars" href="#resenas"><i style="--r:{{ pct }}%" aria-hidden="true"></i><span>{{ rating.rating | round: 1 }} · {{ rating_count }} {% if rating_count == 1 %}reseña{% else %}reseñas{% endif %}</span></a>
+        {%- endif -%}
+
+        <div class="mkp-price" aria-live="polite">
+          <strong data-mkp-price>{{ v.price | money_without_trailing_zeros }}</strong>
+          {%- if v.compare_at_price > v.price -%}
+            <s data-mkp-compare>{{ v.compare_at_price | money_without_trailing_zeros }}</s>
+            <span class="mkp-off">Ahorras {{ v.compare_at_price | minus: v.price | money_without_trailing_zeros }}</span>
+          {%- endif -%}
+        </div>
+        <p class="mkp-once">Pago único. Sin mensualidades.</p>
+
+        {%- if section.settings.short != blank -%}<p class="mkp-short">{{ section.settings.short }}</p>{%- endif -%}
+
+        <div class="mkp-buy mk-glass">
+          {%- form 'product', p, id: 'mkp-form', novalidate: 'novalidate' -%}
+            <input type="hidden" name="id" value="{{ v.id }}" data-mkp-id>
+            <input type="hidden" name="return_to" value="/checkout">
+            {%- unless p.has_only_default_variant -%}
+              <div class="mkp-var" style="margin-bottom:14px">
+                <label for="mkp-var-{{ section.id }}">Elige una opción</label>
+                <select id="mkp-var-{{ section.id }}" data-mkp-select>
+                  {%- for x in p.variants -%}
+                    <option value="{{ x.id }}" data-price="{{ x.price | money_without_trailing_zeros }}"{% if x == v %} selected{% endif %}{% unless x.available %} disabled{% endunless %}>{{ x.title }}{% unless x.available %} · agotado{% endunless %}</option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            {%- endunless -%}
+            <div class="mkp-row">
+              <div class="mkp-qty"><button type="button" aria-label="Quitar uno" data-mkp-q="-1">−</button><input type="number" name="quantity" value="1" min="1" aria-label="Cantidad" data-mkp-qty><button type="button" aria-label="Agregar uno" data-mkp-q="1">+</button></div>
+              <button class="mk-btn" type="submit" name="add"{% unless v.available %} disabled{% endunless %}>{% if v.available %}Comprar ahora{% else %}Agotado{% endif %} <svg class="mk-i" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+            </div>
+          {%- endform -%}
+          {%- if wa != blank -%}
+            <a class="mk-btn mk-btn--glass" href="https://wa.me/{{ wa }}?text={{ wa_msg | url_encode }}" target="_blank" rel="noopener"><svg class="mk-i" aria-hidden="true"><use href="#i-wa"/></svg>Pregunta por WhatsApp</a>
+          {%- endif -%}
+          <a class="mk-btn mk-btn--glass" href="{{ routes.root_url }}#paquete">Ármalo en un paquete con descuento</a>
+          <span class="mkp-mp"><svg class="mk-i" aria-hidden="true"><use href="#i-lock"/></svg>Compra segura con Mercado Pago</span>
+        </div>
+
+        <ul class="mkp-trust" aria-label="Incluye">
+          <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Pago único</li>
+          <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Envío e instalación en CDMX y Edomex</li>
+          <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Soporte por chat</li>
+        </ul>
+
+        {%- if p.description != blank -%}
+          <div class="mkp-desc">
+            <span class="mk-label">Descripción</span>
+            <div class="mk-prose" style="margin-top:14px">{{ p.description }}</div>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <section class="mk-sec mk-sec--s" id="resenas" aria-label="Reseñas">
+        <div class="mkp-rev mk-glass">
+          {%- for block in section.blocks -%}
+            {%- render block -%}
+          {%- endfor -%}
+        </div>
+      </section>
+    {%- endif -%}
+
+    <section class="mk-sec mk-sec--s" aria-labelledby="mkp-more-{{ section.id }}">
+      <div class="mk-head" style="margin-bottom:32px">
+        <span class="mk-label">Completa tu equipo</span>
+        <h2 class="mk-h2" id="mkp-more-{{ section.id }}">También para tu gimnasio</h2>
+      </div>
+      <div class="mkp-more">
+        {%- assign shown = 0 -%}
+        {%- for x in collections.all.products -%}
+          {%- if x.id != p.id and x.available and shown < 4 and x.handle != 'software-mekka-lanzamiento' -%}
+            {%- assign shown = shown | plus: 1 -%}
+            <a class="mkp-card mk-glass" href="{{ x.url }}">
+              <figure>{%- if x.featured_media -%}{{ x.featured_media | image_url: width: 600 | image_tag: loading: 'lazy', alt: x.title }}{%- endif -%}</figure>
+              <h3>{{ x.title }}</h3>
+              <span>{{ x.price | money_without_trailing_zeros }}</span>
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </section>
+
+    <section class="mk-sec mk-sec--s" aria-labelledby="mkp-cta-{{ section.id }}">
+      <div class="mk-cta mk-glass">
+        <div>
+          <span class="mk-label">Mekka Fitness Control</span>
+          <h2 id="mkp-cta-{{ section.id }}">Paga una vez. Úsalo para siempre.</h2>
+          <p>Software, lector facial y torniquete, sin mensualidades. Instalación en un día en CDMX y Edomex.</p>
+        </div>
+        <div class="mk-cta__acts">
+          <a class="mk-btn" href="{{ routes.root_url }}#paquete">Arma tu paquete <svg class="mk-i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          {%- if wa != blank -%}<a class="mk-btn mk-btn--glass" href="https://wa.me/{{ wa }}" target="_blank" rel="noopener">WhatsApp</a>{%- endif -%}
+        </div>
+      </div>
+    </section>
+  </div>
+  {%- render 'mekka-pie' -%}
+</div>
+
+<script>
+  (function () {
+    var root = document.getElementById('mkp-{{ section.id }}');
+    if (!root) return;
+    var img = root.querySelector('.mkp-img');
+    root.querySelectorAll('[data-mkp-thumb]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (!img) return;
+        img.removeAttribute('srcset'); img.src = b.dataset.mkpThumb;
+        root.querySelectorAll('[data-mkp-thumb]').forEach(function (x) { x.setAttribute('aria-current', x === b ? 'true' : 'false'); });
+      });
+    });
+    var qty = root.querySelector('[data-mkp-qty]');
+    root.querySelectorAll('[data-mkp-q]').forEach(function (b) {
+      b.addEventListener('click', function () { qty.value = Math.max(1, (parseInt(qty.value, 10) || 1) + parseInt(b.dataset.mkpQ, 10)); });
+    });
+    var sel = root.querySelector('[data-mkp-select]');
+    if (sel) sel.addEventListener('change', function () {
+      var o = sel.options[sel.selectedIndex];
+      root.querySelector('[data-mkp-id]').value = o.value;
+      root.querySelector('[data-mkp-price]').textContent = o.dataset.price;
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Mekka · Producto",
+  "settings": [
+    { "type": "textarea", "id": "short", "label": "Texto corto bajo el precio", "info": "Opcional. Si lo dejas vacío no se muestra." },
+    { "type": "text", "id": "whatsapp", "label": "WhatsApp", "default": "525533416240", "info": "Con código de país, sin espacios." }
+  ],
+  "blocks": [ { "type": "@app" } ]
+}
+{% endschema %}
