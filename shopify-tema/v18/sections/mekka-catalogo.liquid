@@ -63,9 +63,19 @@
         <h2 class="mk-h2" id="mkc-paq-{{ section.id }}">Paquetes</h2>
       </div>
       <div class="mkc-paqs">
-        {%- assign por_precio = collections.all.products | sort: 'price' -%}
-        {%- for x in por_precio -%}
-          {%- if x.tags contains 'paquete' -%}
+        {%- liquid
+          assign claves = ''
+          for y in collections.all.products
+            if y.tags contains 'paquete'
+              assign pz = '000000000000' | append: y.price | slice: -12, 12
+              assign claves = claves | append: pz | append: '|' | append: y.handle | append: ','
+            endif
+          endfor
+          assign claves = claves | split: ',' | sort
+        -%}
+        {%- for k in claves -%}
+          {%- assign x = all_products[k | split: '|' | last] -%}
+          {%- if x != blank -%}
             {%- assign items = x.description | split: '<li>' -%}
             <a class="mkc-paq mk-glass" href="{{ x.url }}">
               <figure{% if x.featured_media.preview_image.src contains '.jp' %} class="is-foto"{% endif %}>{%- if x.featured_media -%}{{ x.featured_media | image_url: width: 900 | image_tag: loading: 'eager', sizes: '(max-width: 600px) 100vw, 30vw', alt: x.title }}{%- endif -%}</figure>
