@@ -13,6 +13,7 @@
   #mkp-{{ section.id }} .mkp-gal{position:sticky;top:24px;display:flex;flex-direction:column;gap:12px}
   #mkp-{{ section.id }} .mkp-main{position:relative;aspect-ratio:1/1;border-radius:var(--mk-r-xl);overflow:hidden;background:#EEEDE8;display:flex;align-items:center;justify-content:center}
   #mkp-{{ section.id }} .mkp-main img{width:86%;height:86%;object-fit:contain;display:block;transition:opacity 220ms ease}
+  #mkp-{{ section.id }} .mkp-main.is-foto img,#mkp-{{ section.id }} .mkp-card figure.is-foto img{width:100%;height:100%;object-fit:cover}
   #mkp-{{ section.id }} .mkp-main .mkp-ph{color:#000;opacity:.25}
   #mkp-{{ section.id }} .mkp-main .mkp-ph svg{width:96px;height:96px}
   #mkp-{{ section.id }} .mkp-thumbs{display:flex;gap:8px;overflow-x:auto;padding:2px}
@@ -95,7 +96,7 @@
 
     <div class="mkp-grid">
       <div class="mkp-gal">
-        <div class="mkp-main" data-mkp-main>
+        <div class="mkp-main{% if p.featured_media.preview_image.src contains '.jp' %} is-foto{% endif %}" data-mkp-main>
           {%- if p.featured_media -%}
             {{ p.featured_media | image_url: width: 1400 | image_tag: loading: 'eager', fetchpriority: 'high', sizes: '(max-width: 980px) 100vw, 50vw', alt: p.title, class: 'mkp-img' }}
           {%- else -%}
@@ -196,7 +197,7 @@
           {%- if x.id != p.id and x.available and shown < 4 and x.handle != 'software-mekka-lanzamiento' -%}
             {%- assign shown = shown | plus: 1 -%}
             <a class="mkp-card mk-glass" href="{{ x.url }}">
-              <figure>{%- if x.featured_media -%}{{ x.featured_media | image_url: width: 600 | image_tag: loading: 'lazy', alt: x.title }}{%- endif -%}</figure>
+              <figure{% if x.featured_media.preview_image.src contains '.jp' %} class="is-foto"{% endif %}>{%- if x.featured_media -%}{{ x.featured_media | image_url: width: 600 | image_tag: loading: 'lazy', alt: x.title }}{%- endif -%}</figure>
               <h3>{{ x.title }}</h3>
               <span>{{ x.price | money_without_trailing_zeros }}</span>
             </a>
