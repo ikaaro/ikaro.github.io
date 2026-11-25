@@ -107,7 +107,7 @@
           <div class="mkp-thumbs" role="list" aria-label="Fotos del producto">
             {%- for m in p.media -%}
               {%- if m.media_type == 'image' -%}
-                <button type="button" role="listitem" aria-label="Ver foto {{ forloop.index }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" data-mkp-thumb="{{ m | image_url: width: 1400 }}">
+                <button type="button" role="listitem" aria-label="Ver foto {{ forloop.index }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" data-mkp-thumb="{{ m | image_url: width: 1400 }}"{% if m.preview_image.src contains '.jp' %} data-mkp-foto{% endif %}>
                   {{ m | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}
                 </button>
               {%- endif -%}
@@ -232,6 +232,7 @@
       b.addEventListener('click', function () {
         if (!img) return;
         img.removeAttribute('srcset'); img.src = b.dataset.mkpThumb;
+        var mn = root.querySelector('[data-mkp-main]'); if (mn) mn.classList.toggle('is-foto', b.hasAttribute('data-mkp-foto'));
         root.querySelectorAll('[data-mkp-thumb]').forEach(function (x) { x.setAttribute('aria-current', x === b ? 'true' : 'false'); });
       });
     });
