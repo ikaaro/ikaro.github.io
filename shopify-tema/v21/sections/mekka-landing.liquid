@@ -13,6 +13,7 @@
 {%- capture wa_link -%}https://wa.me/{{ wa }}?text={{ section.settings.wa_msg | url_encode }}{%- endcapture -%}
 <style>
   #mkl-{{ section.id }}{padding-bottom:96px}
+  #mkl-{{ section.id }} .mkl-gal,#mkl-{{ section.id }} .mkl-copy{min-width:0}
   #mkl-{{ section.id }} .mkl-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-radius:999px;margin-top:16px}
   #mkl-{{ section.id }} .mkl-top .mk-logo img{height:20px;width:auto}
   #mkl-{{ section.id }} .mkl-top a.mkl-wa-mini{display:inline-flex;align-items:center;gap:8px;color:#fff;font-size:14px;text-decoration:none}
@@ -71,12 +72,12 @@
   .mkl-bar .mk-btn svg{width:18px;height:18px}
   .mkl-bar .mkl-bar-wa{flex:0 0 50px;padding:0}
   @media (max-width:980px){
-    #mkl-{{ section.id }} .mkl-hero,#mkl-{{ section.id }} .mkl-vid,#mkl-{{ section.id }} .mkl-end{grid-template-columns:1fr}
+    #mkl-{{ section.id }} .mkl-hero,#mkl-{{ section.id }} .mkl-vid,#mkl-{{ section.id }} .mkl-end{grid-template-columns:minmax(0,1fr)}
     #mkl-{{ section.id }} .mkl-gal{position:static}
-    #mkl-{{ section.id }} .mkl-items,#mkl-{{ section.id }} .mkl-perks{grid-template-columns:1fr 1fr}
+    #mkl-{{ section.id }} .mkl-items,#mkl-{{ section.id }} .mkl-perks{grid-template-columns:repeat(2,minmax(0,1fr))}
     .mkl-bar{display:flex}
   }
-  @media (max-width:420px){#mkl-{{ section.id }} .mkl-perks{grid-template-columns:1fr}}
+  @media (max-width:420px){#mkl-{{ section.id }} .mkl-perks{grid-template-columns:minmax(0,1fr)}}
 </style>
 
 <div class="mk mk-pg" id="top">
