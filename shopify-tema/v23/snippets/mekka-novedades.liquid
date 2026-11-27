@@ -1,0 +1,93 @@
+{%- comment -%} Mekka: cobro automático con Mercado Pago + tu gym en el celular. Mockups en HTML con datos de ejemplo. {%- endcomment -%}
+<style>
+  .mkn-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .mkn-card{border-radius:var(--mk-r-xl);padding:clamp(22px,3vw,36px);display:flex;flex-direction:column;gap:18px;min-width:0}
+  .mkn-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
+  .mkn-ic svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .mkn-card h3{font-family:var(--mk-f-title);font-weight:500;font-size:clamp(24px,2.4vw,30px);line-height:1.1;letter-spacing:-.02em;color:#fff;margin:0}
+  .mkn-card > p{margin:0;font-size:16px;line-height:1.55;color:var(--mk-muted)}
+  .mkn-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:15px;color:#e6e6e6}
+  .mkn-list li{display:flex;gap:10px;align-items:flex-start}
+  .mkn-list svg{flex:none;width:18px;height:18px;margin-top:1px;color:var(--mk-sage)}
+  .mkn-note{font-size:12.5px;color:var(--mk-muted);line-height:1.45}
+  .mkn-ui{border-radius:22px;background:#0c0c0c;border:1px solid rgba(255,255,255,.1);padding:16px;display:flex;flex-direction:column;gap:10px;font-size:13.5px}
+  .mkn-row{display:grid;grid-template-columns:minmax(0,1.4fr) auto auto;gap:12px;align-items:center;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04)}
+  .mkn-row b{display:block;color:#fff;font-weight:600}
+  .mkn-row small{color:var(--mk-muted)}
+  .mkn-row .m{color:#fff;font-variant-numeric:tabular-nums}
+  .mkn-chip{font-size:11.5px;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .mkn-chip.ok{background:rgba(154,165,138,.18);color:#c9d2bb}
+  .mkn-chip.no{background:rgba(255,255,255,.08);color:#bdbdbd}
+  .mkn-toast{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12)}
+  .mkn-toast i{flex:none;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:14px}
+  .mkn-toast b{color:#fff;font-weight:600}
+  .mkn-toast span{color:var(--mk-muted)}
+  .mkn-phone{align-self:center;width:min(100%,300px);border-radius:40px;padding:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,.16);box-shadow:0 30px 80px rgba(0,0,0,.55)}
+  .mkn-scr{border-radius:30px;background:#0b0b0b;padding:18px 14px 16px;display:flex;flex-direction:column;gap:10px;font-size:12.5px}
+  .mkn-scr .hd{display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:600;font-size:14px}
+  .mkn-scr .hd small{font-family:var(--mk-f-mono);font-size:9.5px;letter-spacing:.14em;color:var(--mk-muted);text-transform:uppercase}
+  .mkn-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mkn-kpi{border-radius:14px;background:rgba(255,255,255,.05);padding:10px}
+  .mkn-kpi small{display:block;color:var(--mk-muted);font-size:10.5px}
+  .mkn-kpi b{display:block;color:#fff;font-family:var(--mk-f-title);font-weight:500;font-size:20px;margin-top:2px;font-variant-numeric:tabular-nums}
+  .mkn-sub{font-family:var(--mk-f-mono);font-size:9.5px;letter-spacing:.14em;color:var(--mk-muted);text-transform:uppercase;margin-top:4px}
+  .mkn-due{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04)}
+  .mkn-due b{display:block;color:#fff;font-weight:600}
+  .mkn-due small{color:var(--mk-muted)}
+  .mkn-wa{flex:none;width:30px;height:30px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center}
+  .mkn-wa svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .mkn-inv{display:flex;justify-content:space-between;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.04);color:#e6e6e6}
+  .mkn-demo{text-align:center;font-size:11px;color:var(--mk-muted)}
+  @media (max-width:900px){.mkn-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
+<div class="mk-head" style="margin-bottom:28px">
+  <span class="mk-label">Nuevo en Mekka · Incluido en tu licencia</span>
+  <h2 class="mk-h2">Cobra solo. <span style="color:var(--mk-muted)">Revisa tu gym desde el celular.</span></h2>
+</div>
+<div class="mkn-grid">
+  <article class="mkn-card mk-glass">
+    <span class="mkn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg></span>
+    <h3>Cobro automático con Mercado Pago</h3>
+    <p>Tu socio registra su tarjeta una vez y se le cobra solo cada vez que vence su membresía. Mekka la renueva en automático y el dinero llega directo a tu cuenta de Mercado Pago.</p>
+    <div class="mkn-ui" aria-hidden="true">
+      <div class="mkn-row"><span><b>Ana Ruiz</b><small>Mensual · próximo cobro 27 dic</small></span><span class="m">$650</span><span class="mkn-chip ok">Activo</span></div>
+      <div class="mkn-row"><span><b>Luis Mora</b><small>Trimestral · próximo cobro 4 ene</small></span><span class="m">$1,700</span><span class="mkn-chip ok">Activo</span></div>
+      <div class="mkn-toast"><i style="background:#F5F5F5;color:#0a0a0a">✓</i><span><b>Cobro aprobado.</b> Membresía renovada.</span></div>
+      <div class="mkn-toast"><i style="background:rgba(255,255,255,.08);color:#fff">✕</i><span><b>Cobro rechazado.</b> El torniquete no lo deja pasar.</span></div>
+      <div class="mkn-demo">Datos de ejemplo</div>
+    </div>
+    <ul class="mkn-list">
+      <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Se cobra en cada vencimiento, según la membresía que eligió</li>
+      <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Si el cobro no pasa, no entra</li>
+      <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Sin costo extra en Mekka</li>
+    </ul>
+    <span class="mkn-note">Mercado Pago aplica su comisión normal por cada cobro.</span>
+  </article>
+
+  <article class="mkn-card mk-glass">
+    <span class="mkn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span>
+    <h3>Tu gym en tu celular</h3>
+    <p>Abre tu panel desde el navegador del teléfono, sin descargar nada. Ve cómo va tu gimnasio aunque no estés ahí.</p>
+    <div class="mkn-phone" aria-hidden="true">
+      <div class="mkn-scr">
+        <div class="hd"><span>Hoy</span><small>Mekka</small></div>
+        <div class="mkn-kpis">
+          <div class="mkn-kpi"><small>Ingresos</small><b>$4,850</b></div>
+          <div class="mkn-kpi"><small>Socios activos</small><b>248</b></div>
+        </div>
+        <div class="mkn-sub">Por vencer</div>
+        <div class="mkn-due"><span><b>Carla Gómez</b><small>Vence mañana</small></span><span class="mkn-wa"><svg viewBox="0 0 24 24"><path d="M3.5 20.5l1.3-4A8.5 8.5 0 1 1 8 19.6z"/></svg></span></div>
+        <div class="mkn-due"><span><b>Jorge Peña</b><small>Vence en 3 días</small></span><span class="mkn-wa"><svg viewBox="0 0 24 24"><path d="M3.5 20.5l1.3-4A8.5 8.5 0 1 1 8 19.6z"/></svg></span></div>
+        <div class="mkn-sub">Inventario</div>
+        <div class="mkn-inv"><span>Agua 1 L</span><span>12 pzas</span></div>
+        <div class="mkn-inv"><span>Proteína 2 lb</span><span>4 pzas</span></div>
+        <div class="mkn-demo">Datos de ejemplo</div>
+      </div>
+    </div>
+    <ul class="mkn-list">
+      <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Ingresos, socios activos e inventario</li>
+      <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Socios por vencer con botón de WhatsApp para darles seguimiento</li>
+      <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>Incluido en tu licencia de pago único</li>
+    </ul>
+  </article>
+</div>

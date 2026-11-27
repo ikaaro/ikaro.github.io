@@ -1,0 +1,271 @@
+{%- comment -%} Mekka ad landing: one package, what it includes, photos, installation video, WhatsApp and secure checkout. {%- endcomment -%}
+{%- render 'mekka-base' -%}
+{%- liquid
+  assign p = section.settings.producto
+  if p == blank
+    assign p = all_products['paquete-sencillo']
+  endif
+  assign v = p.selected_or_first_available_variant
+  assign wa = section.settings.whatsapp | remove: ' ' | remove: '+' | remove: '-'
+  assign nombre = section.settings.nombre | default: p.title
+  assign pago_url = '/cart/' | append: v.id | append: ':1'
+-%}
+{%- capture wa_link -%}https://wa.me/{{ wa }}?text={{ section.settings.wa_msg | url_encode }}{%- endcapture -%}
+<style>
+  #mkl-{{ section.id }}{padding-bottom:96px}
+  #mkl-{{ section.id }} .mkl-gal,#mkl-{{ section.id }} .mkl-copy{min-width:0}
+  #mkl-{{ section.id }} .mkl-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-radius:999px;margin-top:16px}
+  #mkl-{{ section.id }} .mkl-top .mk-logo img{height:20px;width:auto}
+  #mkl-{{ section.id }} .mkl-top a.mkl-wa-mini{display:inline-flex;align-items:center;gap:8px;color:#fff;font-size:14px;text-decoration:none}
+  #mkl-{{ section.id }} .mkl-top a.mkl-wa-mini svg{width:20px;height:20px}
+  #mkl-{{ section.id }} .mkl-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:start;padding-top:clamp(28px,5vw,64px)}
+  #mkl-{{ section.id }} .mkl-gal{display:flex;flex-direction:column;gap:12px;position:sticky;top:24px}
+  #mkl-{{ section.id }} .mkl-main{aspect-ratio:1/1;border-radius:var(--mk-r-xl);overflow:hidden;background:#EEEDE8;display:flex;align-items:center;justify-content:center}
+  #mkl-{{ section.id }} .mkl-main img{width:92%;height:92%;object-fit:contain;display:block}
+  #mkl-{{ section.id }} .mkl-main.is-foto img{width:100%;height:100%;object-fit:cover}
+  #mkl-{{ section.id }} .mkl-ref{font-size:12px;line-height:1.4;color:var(--mk-muted);margin:0;padding:0 4px}
+  #mkl-{{ section.id }} .mkl-thumbs{display:flex;gap:8px;overflow-x:auto;padding:2px}
+  #mkl-{{ section.id }} .mkl-thumbs button{flex:0 0 auto;width:72px;height:72px;border-radius:16px;border:0;padding:0;background:#EEEDE8;cursor:pointer;overflow:hidden;opacity:.6;box-shadow:inset 0 0 0 2px transparent;transition:opacity 200ms ease,box-shadow 200ms ease}
+  #mkl-{{ section.id }} .mkl-thumbs button[aria-current="true"]{opacity:1;box-shadow:inset 0 0 0 2px var(--mk-sage)}
+  #mkl-{{ section.id }} .mkl-thumbs img{width:100%;height:100%;object-fit:contain}
+  #mkl-{{ section.id }} .mkl-thumbs button.is-foto img{object-fit:cover}
+  #mkl-{{ section.id }} .mkl-copy{display:flex;flex-direction:column;gap:18px}
+  #mkl-{{ section.id }} .mkl-copy h1{font-family:var(--mk-f-title);font-size:clamp(38px,5.4vw,64px);line-height:1;letter-spacing:-.03em;font-weight:500;color:#fff;margin:0}
+  #mkl-{{ section.id }} .mkl-copy > p{font-size:clamp(16px,1.5vw,18px);line-height:1.5;color:var(--mk-muted);margin:0;max-width:520px}
+  #mkl-{{ section.id }} .mkl-box{padding:22px;border-radius:var(--mk-r-xl);display:flex;flex-direction:column;gap:16px}
+  #mkl-{{ section.id }} .mkl-inc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:16px;color:#ececec}
+  #mkl-{{ section.id }} .mkl-inc li{display:flex;gap:10px;align-items:flex-start}
+  #mkl-{{ section.id }} .mkl-inc svg{flex:none;width:18px;height:18px;margin-top:2px;color:var(--mk-sage)}
+  #mkl-{{ section.id }} .mkl-gift em{font-style:normal;font-family:var(--mk-f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#0b0b0b;background:var(--mk-sage);border-radius:999px;padding:3px 8px;margin-left:6px;vertical-align:2px}
+  #mkl-{{ section.id }} .mkl-price{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+  #mkl-{{ section.id }} .mkl-price b{font-family:var(--mk-f-title);font-size:clamp(34px,4vw,44px);font-weight:500;color:#fff;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  #mkl-{{ section.id }} .mkl-price s{color:var(--mk-muted);font-size:18px}
+  #mkl-{{ section.id }} .mkl-save{font-family:var(--mk-f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#0b0b0b;background:var(--mk-sage);border-radius:999px;padding:6px 10px}
+  #mkl-{{ section.id }} .mkl-price small{width:100%;font-size:14px;color:var(--mk-muted)}
+  #mkl-{{ section.id }} .mkl-acts{display:flex;flex-direction:column;gap:10px}
+  #mkl-{{ section.id }} .mkl-acts .mk-btn{width:100%;justify-content:center;min-height:56px;font-size:16px}
+  #mkl-{{ section.id }} .mkl-acts .mk-btn svg{width:20px;height:20px}
+  #mkl-{{ section.id }} .mkl-mp{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.05);font-size:14px;line-height:1.35;color:#e6e6e6}
+  #mkl-{{ section.id }} .mkl-mp svg{flex:none;width:22px;height:22px;color:var(--mk-sage)}
+  #mkl-{{ section.id }} .mkl-mp b{color:#fff;font-weight:600}
+  #mkl-{{ section.id }} .mkl-vid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:center}
+  #mkl-{{ section.id }} .mkl-vid video{width:100%;max-width:420px;aspect-ratio:9/16;border-radius:var(--mk-r-xl);background:#111;display:block;object-fit:cover;justify-self:center}
+  #mkl-{{ section.id }} .mkl-vid p{color:var(--mk-muted);font-size:17px;line-height:1.55;max-width:480px}
+  #mkl-{{ section.id }} .mkl-steps{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:14px}
+  #mkl-{{ section.id }} .mkl-steps li{display:flex;gap:14px;align-items:flex-start;color:#ececec;font-size:16px;line-height:1.45}
+  #mkl-{{ section.id }} .mkl-steps i{flex:none;font-style:normal;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mk-f-mono);font-size:13px;color:#0b0b0b;background:var(--mk-sage)}
+  #mkl-{{ section.id }} .mkl-items{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  #mkl-{{ section.id }} .mkl-item{display:flex;flex-direction:column;gap:12px;padding:12px 12px 18px;border-radius:var(--mk-r-lg)}
+  #mkl-{{ section.id }} .mkl-item figure{aspect-ratio:1/1;border-radius:20px;background:#EEEDE8;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0}
+  #mkl-{{ section.id }} .mkl-item figure img{width:82%;height:82%;object-fit:contain}
+  #mkl-{{ section.id }} .mkl-item figure.is-foto img{width:100%;height:100%;object-fit:cover}
+  #mkl-{{ section.id }} .mkl-item h3{font-family:var(--mk-f-title);font-size:18px;line-height:1.25;font-weight:500;color:#fff;margin:0;padding:0 6px}
+  #mkl-{{ section.id }} .mkl-item span{font-size:14px;color:var(--mk-muted);padding:0 6px;font-variant-numeric:tabular-nums}
+  #mkl-{{ section.id }} .mkl-perks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+  #mkl-{{ section.id }} .mkl-perks div{padding:18px;border-radius:var(--mk-r-lg);display:flex;flex-direction:column;gap:6px}
+  #mkl-{{ section.id }} .mkl-perks b{font-family:var(--mk-f-title);font-weight:500;font-size:18px;color:#fff}
+  #mkl-{{ section.id }} .mkl-perks span{font-size:14px;color:var(--mk-muted);line-height:1.4}
+  #mkl-{{ section.id }} .mkl-end{padding:clamp(24px,4vw,48px);border-radius:var(--mk-r-xl);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:24px;align-items:center}
+  #mkl-{{ section.id }} .mkl-end h2{font-family:var(--mk-f-title);font-size:clamp(30px,4vw,46px);line-height:1.05;letter-spacing:-.02em;font-weight:500;color:#fff;margin:10px 0 0}
+  #mkl-{{ section.id }} .mkl-legal{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:28px 4px 0;font-size:13px;color:var(--mk-muted)}
+  #mkl-{{ section.id }} .mkl-legal a{color:var(--mk-muted)}
+  .mkl-bar{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;gap:8px;padding:8px;border-radius:999px}
+  .mkl-bar .mk-btn{flex:1;justify-content:center;min-height:50px;font-size:15px;padding-left:12px;padding-right:12px}
+  .mkl-bar .mk-btn svg{width:18px;height:18px}
+  .mkl-bar .mkl-bar-wa{flex:0 0 50px;padding:0}
+  @media (max-width:980px){
+    #mkl-{{ section.id }} .mkl-hero,#mkl-{{ section.id }} .mkl-vid,#mkl-{{ section.id }} .mkl-end{grid-template-columns:minmax(0,1fr)}
+    #mkl-{{ section.id }} .mkl-gal{position:static}
+    #mkl-{{ section.id }} .mkl-items,#mkl-{{ section.id }} .mkl-perks{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .mkl-bar{display:flex}
+  }
+  @media (max-width:420px){#mkl-{{ section.id }} .mkl-perks{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div class="mk mk-pg" id="top">
+  <div class="mk-wrap" id="mkl-{{ section.id }}">
+    <header class="mkl-top mk-glass">
+      <a class="mk-logo" href="{{ routes.root_url }}" aria-label="Mekka, inicio">
+        <span style="width:42px"><svg class="mk-masc" viewBox="0 0 100 76.9" aria-hidden="true"><use href="#m-body"/><path class="e" d="M22.0 46.6 L30.95 37.6 L39.9 46.6"/><path class="e" d="M60.1 42.95 L69.05 42.95 L78.0 42.95"/></svg></span>
+        <img src="{{ 'mekka-wordmark.png' | asset_url }}" alt="" width="117" height="20">
+      </a>
+      <a class="mkl-wa-mini" href="{{ wa_link }}" target="_blank" rel="noopener" data-mkl-ev="wa_top"><svg class="mk-i" aria-hidden="true"><use href="#i-wa"/></svg>55 3341 6240</a>
+    </header>
+
+    <section class="mkl-hero" aria-labelledby="mkl-h1-{{ section.id }}">
+      <div class="mkl-gal">
+        {%- assign fm = p.featured_media -%}
+        <div class="mkl-main{% if fm.preview_image.src contains '.jp' %} is-foto{% endif %}" data-mkl-main>
+          {%- if fm -%}{{ fm | image_url: width: 1400 | image_tag: loading: 'eager', fetchpriority: 'high', sizes: '(max-width: 980px) 100vw, 50vw', alt: nombre, data-mkl-img: '' }}{%- endif -%}
+        </div>
+        <p class="mkl-ref">Imagen de referencia. Los equipos entregados pueden variar en modelo, color y apariencia según disponibilidad.</p>
+        <div class="mkl-thumbs" role="list" aria-label="Fotos">
+          {%- assign n = 0 -%}
+          {%- for m in p.media -%}
+            {%- if m.media_type == 'image' -%}
+              {%- assign n = n | plus: 1 -%}
+              <button type="button" role="listitem" class="{% if m.preview_image.src contains '.jp' %}is-foto{% endif %}" aria-label="Ver foto {{ n }}" aria-current="{% if n == 1 %}true{% else %}false{% endif %}" data-mkl-thumb="{{ m | image_url: width: 1400 }}">{{ m | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}</button>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- for x in section.settings.incluye -%}
+            {%- if x.featured_media -%}
+              {%- assign n = n | plus: 1 -%}
+              <button type="button" role="listitem" class="{% if x.featured_media.preview_image.src contains '.jp' %}is-foto{% endif %}" aria-label="Ver {{ x.title }}" aria-current="false" data-mkl-thumb="{{ x.featured_media | image_url: width: 1400 }}">{{ x.featured_media | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}</button>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+
+      <div class="mkl-copy">
+        <span class="mk-label">{{ section.settings.etiqueta }}</span>
+        <h1 id="mkl-h1-{{ section.id }}">{{ nombre }}</h1>
+        <p>{{ section.settings.bajada }}</p>
+
+        <div class="mkl-box mk-glass">
+          <span class="mk-label">Incluye</span>
+          <ul class="mkl-inc">
+            {%- for x in section.settings.incluye -%}
+              <li><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg>{{ x.title }}</li>
+            {%- endfor -%}
+            {%- if section.settings.regalo != blank -%}
+              <li class="mkl-gift"><svg class="mk-i" aria-hidden="true"><use href="#i-ok"/></svg><span>{{ section.settings.regalo }} <em>de regalo</em></span></li>
+            {%- endif -%}
+          </ul>
+          <div class="mkl-price">
+            <b>{{ v.price | money_without_trailing_zeros }}</b>
+            {%- if v.compare_at_price > v.price -%}
+              <s>{{ v.compare_at_price | money_without_trailing_zeros }}</s>
+              <span class="mkl-save">Ahorras {{ v.compare_at_price | minus: v.price | money_without_trailing_zeros }}</span>
+            {%- endif -%}
+            <small>IVA incluido. Pago único, sin mensualidades.</small>
+          </div>
+          <div class="mkl-acts">
+            <a class="mk-btn" href="{{ pago_url }}" data-mkl-ev="pago">
+              <svg class="mk-i" aria-hidden="true"><use href="#i-lock"/></svg>Proceder al pago seguro
+            </a>
+            <a class="mk-btn mk-btn--glass" href="{{ wa_link }}" target="_blank" rel="noopener" data-mkl-ev="wa">
+              <svg class="mk-i" aria-hidden="true"><use href="#i-wa"/></svg>Quiero más información
+            </a>
+          </div>
+          <div class="mkl-mp">
+            <svg class="mk-i" aria-hidden="true"><use href="#i-lock"/></svg>
+            <span><b>Tu pago está protegido por Mercado Pago.</b></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mk-sec mk-sec--s" aria-labelledby="mkl-vid-{{ section.id }}">
+      <div class="mkl-vid">
+        <video src="{{ 'instalacion-mekka.mp4' | asset_url }}" {% if section.settings.poster %}poster="{{ section.settings.poster | image_url: width: 720 }}"{% endif %} controls muted playsinline loop preload="metadata" data-mkl-video aria-label="Video de una instalación real de Mekka"></video>
+        <div>
+          <span class="mk-label">Instalación real</span>
+          <h2 class="mk-h2" id="mkl-vid-{{ section.id }}">Así queda en tu entrada.</h2>
+          <p>{{ section.settings.video_texto }}</p>
+          <ol class="mkl-steps">
+            <li><i>1</i><span>Tu socio se para frente al lector y lo reconoce en un segundo.</span></li>
+            <li><i>2</i><span>Mekka revisa que su membresía esté al corriente.</span></li>
+            <li><i>3</i><span>El torniquete gira. Si debe, no pasa.</span></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="mk-sec mk-sec--s" aria-label="Novedades">
+      {%- render 'mekka-novedades' -%}
+    </section>
+
+    <section class="mk-sec mk-sec--s" aria-labelledby="mkl-inc-{{ section.id }}">
+      <div class="mk-head" style="margin-bottom:28px">
+        <span class="mk-label">Pieza por pieza</span>
+        <h2 class="mk-h2" id="mkl-inc-{{ section.id }}">Lo que te llega</h2>
+      </div>
+      <div class="mkl-items">
+        {%- for x in section.settings.incluye -%}
+          <div class="mkl-item mk-glass">
+            <figure{% if x.featured_media.preview_image.src contains '.jp' %} class="is-foto"{% endif %}>{%- if x.featured_media -%}{{ x.featured_media | image_url: width: 600 | image_tag: loading: 'lazy', sizes: '(max-width: 980px) 50vw, 25vw', alt: x.title }}{%- endif -%}</figure>
+            <h3>{{ x.title }}</h3>
+            <span>Por separado: {{ x.price | money_without_trailing_zeros }}</span>
+          </div>
+        {%- endfor -%}
+      </div>
+      <div class="mkl-perks">
+        <div class="mk-glass"><b>Pago único</b><span>Sin mensualidades, nunca.</span></div>
+        <div class="mk-glass"><b>Socios ilimitados</b><span>Registra a todos los que quieras.</span></div>
+        <div class="mk-glass"><b>1 año de garantía</b><span>Respaldo si algo falla.</span></div>
+        <div class="mk-glass"><b>Soporte de por vida</b><span>Por chat, cuando lo necesites.</span></div>
+      </div>
+    </section>
+
+    <section class="mk-sec mk-sec--s" aria-labelledby="mkl-end-{{ section.id }}">
+      <div class="mkl-end mk-glass">
+        <div>
+          <span class="mk-label">{{ nombre }} · {{ v.price | money_without_trailing_zeros }}</span>
+          <h2 id="mkl-end-{{ section.id }}">{{ section.settings.cierre }}</h2>
+        </div>
+        <div class="mkl-acts">
+          <a class="mk-btn" href="{{ pago_url }}" data-mkl-ev="pago_fin"><svg class="mk-i" aria-hidden="true"><use href="#i-lock"/></svg>Proceder al pago seguro</a>
+          <a class="mk-btn mk-btn--glass" href="{{ wa_link }}" target="_blank" rel="noopener" data-mkl-ev="wa_fin"><svg class="mk-i" aria-hidden="true"><use href="#i-wa"/></svg>Quiero más información</a>
+          <div class="mkl-mp"><svg class="mk-i" aria-hidden="true"><use href="#i-lock"/></svg><span>Pago protegido por <b>Mercado Pago</b>.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="mkl-legal">
+      <span>© {{ "now" | date: "%Y" }} Mekka Fitness Control · CDMX y Estado de México</span>
+      <span><a href="{{ shop.privacy_policy.url | default: '/policies/privacy-policy' }}">Aviso de privacidad</a> · <a href="{{ shop.terms_of_service.url | default: '/policies/terms-of-service' }}">Términos</a></span>
+    </div>
+  </div>
+
+  <div class="mkl-bar mk-glass" aria-label="Acciones">
+    <a class="mk-btn mk-btn--glass mkl-bar-wa" href="{{ wa_link }}" target="_blank" rel="noopener" aria-label="Quiero más información por WhatsApp" data-mkl-ev="wa_bar"><svg class="mk-i" aria-hidden="true"><use href="#i-wa"/></svg></a>
+    <a class="mk-btn" href="{{ pago_url }}" data-mkl-ev="pago_bar"><svg class="mk-i" aria-hidden="true"><use href="#i-lock"/></svg>Pago seguro · {{ v.price | money_without_trailing_zeros }}</a>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var root = document.getElementById('mkl-{{ section.id }}');
+    if (!root) return;
+    var main = root.querySelector('[data-mkl-main]');
+    var img = main && main.querySelector('img');
+    root.querySelectorAll('[data-mkl-thumb]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (!img) return;
+        img.removeAttribute('srcset'); img.src = b.dataset.mklThumb;
+        main.classList.toggle('is-foto', b.classList.contains('is-foto'));
+        root.querySelectorAll('[data-mkl-thumb]').forEach(function (x) { x.setAttribute('aria-current', x === b ? 'true' : 'false'); });
+      });
+    });
+    var vid = root.querySelector('[data-mkl-video]');
+    if (vid && 'IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { vid.play().catch(function () {}); } else { vid.pause(); } }); }, { threshold: .4 }).observe(vid);
+    }
+    document.querySelectorAll('[data-mkl-ev]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        var ev = a.dataset.mklEv;
+        try { if (window.gtag) gtag('event', ev.indexOf('wa') === 0 ? 'landing_whatsapp' : 'landing_pago', { ubicacion: ev, paquete: {{ p.handle | json }} }); } catch (e) {}
+        try { if (window.fbq) fbq('track', ev.indexOf('wa') === 0 ? 'Contact' : 'InitiateCheckout'); } catch (e) {}
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Mekka landing paquete",
+  "settings": [
+    { "type": "product", "id": "producto", "label": "Paquete" },
+    { "type": "text", "id": "nombre", "label": "Nombre a mostrar (vacío = nombre del producto)" },
+    { "type": "text", "id": "etiqueta", "label": "Etiqueta", "default": "Control de acceso para tu gimnasio" },
+    { "type": "textarea", "id": "bajada", "label": "Texto principal", "default": "Torniquete, lector facial y el software Mekka listos para tu entrada. Tus socios entran con la cara y solo pasa quien está al corriente." },
+    { "type": "product_list", "id": "incluye", "label": "Productos incluidos", "limit": 8 },
+    { "type": "textarea", "id": "video_texto", "label": "Texto del video", "default": "Este es un gimnasio real con Mekka. El lector facial va montado en su soporte junto al torniquete y todo se conecta al software en tu recepción." },
+    { "type": "text", "id": "regalo", "label": "Regalo (opcional)" },
+    { "type": "image_picker", "id": "poster", "label": "Portada del video" },
+    { "type": "text", "id": "cierre", "label": "Título final", "default": "Que solo entre quien pagó." },
+    { "type": "text", "id": "whatsapp", "label": "WhatsApp", "default": "525533416240" },
+    { "type": "text", "id": "wa_msg", "label": "Mensaje de WhatsApp", "default": "Hola, buena tarde. Quiero información sobre el paquete sencillo." }
+  ]
+}
+{% endschema %}
