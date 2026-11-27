@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "main": {
+      "type": "mekka-landing",
+      "settings": {
+        "poster": "shopify://shop_images/instalacion-mekka-poster.jpg",
+        "producto": "paquete-medio",
+        "incluye": [
+          "torniquete-de-acceso",
+          "computadora-reacondicionada-con-2-monitores",
+          "lector-de-reconocimiento-facial",
+          "soporte-para-lector-facial",
+          "software-mekka-fitness-control",
+          "instalacion-en-sitio-cdmx-y-edomex"
+        ],
+        "bajada": "Torniquete de acero inoxidable, computadora con 2 monitores, lector facial y el software Mekka, instalados en tu gimnasio. Entrada y recepción listas desde el primer día.",
+        "wa_msg": "Hola, buena tarde. Quiero información sobre el kit completo."
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

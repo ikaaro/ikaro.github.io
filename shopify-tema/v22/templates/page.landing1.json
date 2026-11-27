@@ -1,0 +1,25 @@
+{
+  "sections": {
+    "main": {
+      "type": "mekka-landing",
+      "settings": {
+        "poster": "shopify://shop_images/instalacion-mekka-poster.jpg",
+        "producto": "paquete-sencillo",
+        "incluye": [
+          "torniquete-chico",
+          "lector-de-reconocimiento-facial",
+          "soporte-para-lector-facial",
+          "impresora-termica-de-tickets",
+          "software-mekka-fitness-control",
+          "instalacion-en-sitio-cdmx-y-edomex"
+        ],
+        "regalo": "Monitor",
+        "bajada": "Torniquete de pedestal, lector facial, impresora de tickets y el software Mekka, instalados en tu gimnasio. Tus socios entran con la cara y solo pasa quien está al corriente.",
+        "wa_msg": "Hola, buena tarde. Quiero información sobre el kit chico."
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
