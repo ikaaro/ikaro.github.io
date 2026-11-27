@@ -23,6 +23,7 @@
   #mkl-{{ section.id }} .mkl-main{aspect-ratio:1/1;border-radius:var(--mk-r-xl);overflow:hidden;background:#EEEDE8;display:flex;align-items:center;justify-content:center}
   #mkl-{{ section.id }} .mkl-main img{width:92%;height:92%;object-fit:contain;display:block}
   #mkl-{{ section.id }} .mkl-main.is-foto img{width:100%;height:100%;object-fit:cover}
+  #mkl-{{ section.id }} .mkl-ref{font-size:12px;line-height:1.4;color:var(--mk-muted);margin:0;padding:0 4px}
   #mkl-{{ section.id }} .mkl-thumbs{display:flex;gap:8px;overflow-x:auto;padding:2px}
   #mkl-{{ section.id }} .mkl-thumbs button{flex:0 0 auto;width:72px;height:72px;border-radius:16px;border:0;padding:0;background:#EEEDE8;cursor:pointer;overflow:hidden;opacity:.6;box-shadow:inset 0 0 0 2px transparent;transition:opacity 200ms ease,box-shadow 200ms ease}
   #mkl-{{ section.id }} .mkl-thumbs button[aria-current="true"]{opacity:1;box-shadow:inset 0 0 0 2px var(--mk-sage)}
@@ -97,6 +98,7 @@
         <div class="mkl-main{% if fm.preview_image.src contains '.jp' %} is-foto{% endif %}" data-mkl-main>
           {%- if fm -%}{{ fm | image_url: width: 1400 | image_tag: loading: 'eager', fetchpriority: 'high', sizes: '(max-width: 980px) 100vw, 50vw', alt: nombre, data-mkl-img: '' }}{%- endif -%}
         </div>
+        <p class="mkl-ref">Imagen de referencia. Los equipos entregados pueden variar en modelo, color y apariencia según disponibilidad.</p>
         <div class="mkl-thumbs" role="list" aria-label="Fotos">
           {%- assign n = 0 -%}
           {%- for m in p.media -%}
